@@ -1,0 +1,38 @@
+﻿<Window x:Class="Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctk="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        xmlns:c="clr-namespace:System.Windows.Controls.DataVisualization;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        xmlns:local="clr-namespace:Gui"
+        mc:Ignorable="d"
+        Title="What a window!" Height="600" Width="525">
+    <Window.Resources>
+        <Style x:Key="InvisibleDataPointBlue" TargetType="{x:Type ctk:DataPoint}">
+            <Setter Property="Background" Value="Blue"/>
+            <Setter Property="Template" Value="{x:Null}"/>
+        </Style>
+        <Style x:Key="InvisibleLegend" TargetType="{x:Type c:Legend}" >
+            <Setter Property="Width" Value="0"/>
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <Grid DockPanel.Dock="Bottom" Height="150" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="{Binding InfoText}" Grid.Row="0" Grid.ColumnSpan="2" Background="Gray" Foreground="White"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"/>
+            <Button Command="{Binding OnStartButtonPressed}" Margin="10" Content="Start!" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Command="{Binding OnStopButtonPressed}" Margin="10" Content="Stop!" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </Grid>
+        <ctk:Chart Title="EEG data" LegendStyle="{StaticResource InvisibleLegend}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <ctk:LineSeries ItemsSource="{Binding DataSeries}" DataPointStyle="{StaticResource InvisibleDataPointBlue}" DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
+        </ctk:Chart>
+    </DockPanel>
+</Window>
