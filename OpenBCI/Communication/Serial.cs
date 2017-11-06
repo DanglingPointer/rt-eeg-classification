@@ -19,7 +19,7 @@ namespace Communication
         public static SerialManager CreateAny()
         {
             string[] ports = SerialPort.GetPortNames();
-            if (ports.Length > 1)
+            if (ports.Length != 1)
                 throw new IOException();
             return new SerialManager(ports[0]);
         }
@@ -51,7 +51,7 @@ namespace Communication
             _receiveBuffer = new MemoryStream();
 
             _port.DataReceived += (sender, e) => {
-                // write received bytes to the buffer
+                // append received bytes to the buffer
                 byte[] tempBuffer = new byte[_port.BytesToRead];
                 int bytesRead = _port.Read(tempBuffer, 0, tempBuffer.Length);
                 _receiveBuffer.Write(tempBuffer, 0, bytesRead);
@@ -60,8 +60,9 @@ namespace Communication
                 // loop through the buffer length
                 long lastPosition = _receiveBuffer.Position;
                 while (_receiveBuffer.Position + 2 < _receiveBuffer.Length) {
+                    int nextByte = _receiveBuffer.ReadByte();
 
-                    if (_receiveBuffer.ReadByte() == '$'
+                    if (nextByte == '$'
                         && _receiveBuffer.ReadByte() == '$'
                         && _receiveBuffer.ReadByte() == '$') {
                         // extract bytes up to "$$$" and send as Info
@@ -74,8 +75,7 @@ namespace Communication
 
                         lastPosition = _receiveBuffer.Position;
                     }
-                    else if (_receiveBuffer.ReadByte() == 0xA0
-                        && _receiveBuffer.Length - (_receiveBuffer.Position - 1) >= 33) {
+                    else if (nextByte == 0xA0 && _receiveBuffer.Length - (_receiveBuffer.Position - 1) >= 33) {
                         // extract the next 32 bytes after "0xA0" and send as Data
 
                         byte[] dataBytes = new byte[33];
