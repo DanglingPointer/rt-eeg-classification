@@ -22,34 +22,24 @@ namespace Gui
         public new T Dequeue()
         {
             T removed = base.Dequeue();
-            OnCollectionChanged(NotifyCollectionChangedAction.Remove, removed, 0);
-            OnCountChanged();
             return removed;
         }
         public new void Enqueue(T item)
         {
             int index = Count;
             base.Enqueue(item);
-            OnCollectionChanged(NotifyCollectionChangedAction.Add, item, index);
-            OnCountChanged();
         }
         public new void Clear()
         {
             base.Clear();
-            OnCollectionReset();
-            OnCountChanged();
+            NotifyCollectionChanged();
         }
-
-        private void OnCollectionChanged(NotifyCollectionChangedAction action, object item, int index)
-        {
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, item, index));
-        }
-        private void OnCollectionReset()
+        /// <summary>
+        /// Must be called after any Enqueue/Dequeue operations
+        /// </summary>
+        public void NotifyCollectionChanged()
         {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-        private void OnCountChanged()
-        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
         }
     }
