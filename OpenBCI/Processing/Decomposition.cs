@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Spline;
 
+/// <summary>
+/// Implementation of Empirical Mode Decomposition, making use of parallel processing
+/// </summary>
 namespace Processing
 {
     class MonotonicFunctionException : Exception
@@ -150,6 +152,13 @@ namespace Processing
         { get; private set; }
     }
 
+    public interface IImfDecomposition
+    {
+        IList<double[]> ImfFunctions { get; }
+
+        double[] ResidueFunction { get; }
+    }
+
     class EmdDecomposer : IImfDecomposition
     {
         /// <summary>
@@ -192,9 +201,18 @@ namespace Processing
 
     class EemdDecomposer : IImfDecomposition
     {
-        public EemdDecomposer(double[] xValues, double[] yValues, int ensembleCount, double wnAmplitude = 0.5)
+        /// <summary>
+        /// Ensemble empirical mode decomposition. No residual function
+        /// </summary>
+        /// <param name="xValues"></param>
+        /// <param name="yValues"></param>
+        /// <param name="ensembleCount">Number of generated white noise ranges</param>
+        /// <param name="wnAmplitude">Max white noise amplitude (must be positive)</param>
+        public EemdDecomposer(double[] xValues, double[] yValues, int ensembleCount, double wnAmplitude)
         {
             double[][] yValuesEnsembles = new double[ensembleCount][];
+
+            // Add white noise 
 
             Random r = new Random(Guid.NewGuid().GetHashCode());
 
@@ -205,11 +223,15 @@ namespace Processing
                 }
             }
 
+            // Decompose the ensembles in parallell
+
             IList<double[]>[] imfEnsembles = new IList<double[]>[ensembleCount];
 
             Parallel.For(0, ensembleCount, (i) => {
+                var myImfEnsembles = imfEnsembles;
+
                 var decomposer = new EmdDecomposer(xValues, yValuesEnsembles[i]);
-                imfEnsembles[i] = decomposer.ImfFunctions;
+                myImfEnsembles[i] = decomposer.ImfFunctions;
             });
 
             int maxImfCount = 0;
@@ -218,9 +240,13 @@ namespace Processing
                     maxImfCount = imfFunctions.Count;
             }
 
+            // Compute average in parallell
+
             ImfFunctions = new double[maxImfCount][];
 
             Parallel.For(0, maxImfCount, (imfIndex) => {
+                var myImfFunctions = ImfFunctions;
+
                 double[] resultingImf = new double[yValues.Length];
                 int actualEnsembleCount = 0;
 
@@ -238,7 +264,7 @@ namespace Processing
                 for (int i = 0; i < resultingImf.Length; ++i) {
                     resultingImf[i] /= actualEnsembleCount;
                 }
-                ImfFunctions[imfIndex] = resultingImf;
+                myImfFunctions[imfIndex] = resultingImf;
             });
 
             ResidueFunction = null;
@@ -251,21 +277,30 @@ namespace Processing
         { get; private set; }
     }
 
-    public interface IImfDecomposition
-    {
-        IList<double[]> ImfFunctions { get; }
-        double[] ResidueFunction { get; }
-    }
-
     public static class Emd
     {
-        public static IImfDecomposition ComputeDecomposition(double[] xValues, double[] yValues)
+        /// <summary>
+        /// Decompose yValues into IMFs using Empirical Mode Decomposition
+        /// </summary>
+        /// <param name="xValues"></param>
+        /// <param name="yValues"></param>
+        /// <returns></returns>
+        public static IImfDecomposition Decompose(double[] xValues, double[] yValues)
         {
             return new EmdDecomposer(xValues, yValues);
         }
-        public static IImfDecomposition ComputeEnsembleDecomposition(double[] xValues, double[] yValues, int ensembleCount = 10)
+        /// <summary>
+        /// Decompose yValues into IMFs using Ensemble Empirical Mode Decomposition
+        /// </summary>
+        /// <param name="xValues"></param>
+        /// <param name="yValues"></param>
+        /// <param name="ensembleCount"></param>
+        /// <param name="noiseAmplitude"></param>
+        /// <returns></returns>
+        public static IImfDecomposition EnsembleDecompose(double[] xValues, double[] yValues, 
+            int ensembleCount = 10, double noiseAmplitude = 0.5)
         {
-            return new EemdDecomposer(xValues, yValues, ensembleCount);
+            return new EemdDecomposer(xValues, yValues, ensembleCount, noiseAmplitude);
         }
     }
 }
