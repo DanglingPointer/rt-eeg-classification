@@ -149,7 +149,8 @@ namespace Processing
         public double[] Residue
         { get; private set; }
     }
-    public class EmdDecomposer
+
+    class EmdDecomposer : IImfDecomposition
     {
         /// <summary>
         /// Decomposes yValues into several IMF functions + 1 monotonic residue function
@@ -158,6 +159,7 @@ namespace Processing
         /// <param name="yValues"></param>
         public EmdDecomposer(double[] xValues, double[] yValues)
         {
+            ImfFunctions = new List<double[]>();
             ResidueFunction = yValues;
 
             Sifter s;
@@ -170,7 +172,7 @@ namespace Processing
             } while (s.Imf != null);
         }
 
-        public List<double[]> ImfFunctions
+        public IList<double[]> ImfFunctions
         { get; private set; }
 
         public double[] ResidueFunction
@@ -185,6 +187,85 @@ namespace Processing
                 sd += (diff * diff) / (nextLastYValues[i] * nextLastYValues[i]);
             }
             return sd < 0.3;
+        }
+    }
+
+    class EemdDecomposer : IImfDecomposition
+    {
+        public EemdDecomposer(double[] xValues, double[] yValues, int ensembleCount, double wnAmplitude = 0.5)
+        {
+            double[][] yValuesEnsembles = new double[ensembleCount][];
+
+            Random r = new Random(Guid.NewGuid().GetHashCode());
+
+            for (int i = 0; i < ensembleCount; ++i) {
+                yValuesEnsembles[i] = new double[yValues.Length];
+                for (int x = 0; x < yValues.Length; ++x) {
+                    yValuesEnsembles[i][x] = yValues[x] + (r.NextDouble() - 0.5) * (2 * wnAmplitude);
+                }
+            }
+
+            IList<double[]>[] imfEnsembles = new IList<double[]>[ensembleCount];
+
+            Parallel.For(0, ensembleCount, (i) => {
+                var decomposer = new EmdDecomposer(xValues, yValuesEnsembles[i]);
+                imfEnsembles[i] = decomposer.ImfFunctions;
+            });
+
+            int maxImfCount = 0;
+            foreach (IList<double[]> imfFunctions in imfEnsembles) {
+                if (imfFunctions.Count > maxImfCount)
+                    maxImfCount = imfFunctions.Count;
+            }
+
+            ImfFunctions = new double[maxImfCount][];
+
+            Parallel.For(0, maxImfCount, (imfIndex) => {
+                double[] resultingImf = new double[yValues.Length];
+                int actualEnsembleCount = 0;
+
+                foreach (IList<double[]> imfFunctions in imfEnsembles) {
+                    if (imfIndex < imfFunctions.Count) {
+                        actualEnsembleCount++;
+
+                        int xIndex = 0;
+                        foreach (double value in imfFunctions[imfIndex]) {
+                            resultingImf[xIndex++] += value;
+                        }
+
+                    }
+                }
+                for (int i = 0; i < resultingImf.Length; ++i) {
+                    resultingImf[i] /= actualEnsembleCount;
+                }
+                ImfFunctions[imfIndex] = resultingImf;
+            });
+
+            ResidueFunction = null;
+        }
+
+        public IList<double[]> ImfFunctions
+        { get; private set; }
+
+        public double[] ResidueFunction
+        { get; private set; }
+    }
+
+    public interface IImfDecomposition
+    {
+        IList<double[]> ImfFunctions { get; }
+        double[] ResidueFunction { get; }
+    }
+
+    public static class Emd
+    {
+        public static IImfDecomposition ComputeDecomposition(double[] xValues, double[] yValues)
+        {
+            return new EmdDecomposer(xValues, yValues);
+        }
+        public static IImfDecomposition ComputeEnsembleDecomposition(double[] xValues, double[] yValues, int ensembleCount = 10)
+        {
+            return new EemdDecomposer(xValues, yValues, ensembleCount);
         }
     }
 }

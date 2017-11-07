@@ -441,7 +441,7 @@ namespace Spline
     /// That means that A[0] is not actually on the matrix and is therefore never used, and same with C[N-1].
     /// </para>
     /// </remarks>
-    public class TriDiagonalMatrixF
+    class TriDiagonalMatrixF
     {
         #region TriDiagonalMatrix implementation
         /// <summary>
