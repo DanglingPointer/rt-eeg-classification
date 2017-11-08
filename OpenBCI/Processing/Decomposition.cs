@@ -24,6 +24,25 @@ using Spline;
 /// </summary>
 namespace Processing
 {
+    static class LinearSpline
+    {
+        public static double[] Compute(double[] x, double[] y, double[] xs)
+        {
+            if (x.Length > 2 || y.Length > 2)
+                throw new ArgumentException();
+
+            double a = (y[0] - y[1]) / (x[0] - x[1]);
+            double b = y[0] - a * x[0];
+
+            double[] ys = new double[xs.Length];
+            for (int i = 0; i < xs.Length; ++i) {
+                ys[i] = a * xs[i] + b;
+            }
+            return ys;
+        }
+    }
+
+
     class MonotonicFunctionException : Exception
     { }
 
@@ -79,16 +98,27 @@ namespace Processing
             }
 
             UpperExtremaCount = maxX.Count;
-            LowerExtremaCount = minX.Count;
-
-            if (UpperExtremaCount == 2 && LowerExtremaCount == 2)
+            LowerExtremaCount = minX.Count;            
+            
+            if (UpperExtremaCount <= 2 && LowerExtremaCount <= 2) {
                 throw new MonotonicFunctionException();
+            }
 
             // Compute interpolations in parallell
 
             Parallel.Invoke(
-                () => UpperEnvelope = CubicSpline.Compute(maxX.ToArray(), maxY.ToArray(), xValues),
-                () => LowerEnvelope = CubicSpline.Compute(minX.ToArray(), minY.ToArray(), xValues)
+                () => {
+                    if (UpperExtremaCount == 2)
+                        UpperEnvelope = LinearSpline.Compute(maxX.ToArray(), maxY.ToArray(), xValues);
+                    else 
+                        UpperEnvelope = CubicSpline.Compute(maxX.ToArray(), maxY.ToArray(), xValues);
+                },
+                () => {
+                    if (LowerExtremaCount == 2)
+                        LowerEnvelope = LinearSpline.Compute(minX.ToArray(), minY.ToArray(), xValues);
+                    else 
+                        LowerEnvelope = CubicSpline.Compute(minX.ToArray(), minY.ToArray(), xValues);
+                }
             );
         }
         public double[] UpperEnvelope
@@ -121,11 +151,11 @@ namespace Processing
         /// </summary>
         /// <param name="xValues"></param>
         /// <param name="yValues"></param>
-        /// <param name="stopCondition"></param>
+        /// <param name="stopCondition">Should return true when no more sifting is needed</param>
         public Sifter(double[] xValues, double[] yValues, SiftingStopCriterionDelegate stopCondition)
         {
-            _length = _xValues.Length;
             _xValues = xValues;
+            _length = _xValues.Length;
             _stopCondition = stopCondition;          
 
             _prevH = new double[_length];
@@ -134,7 +164,7 @@ namespace Processing
             Array.Copy(yValues, _prevH, _length);
 
             try {
-                SiftRecursively(); // returns when _newH is IMF
+                SiftRecursively(); // returns when _newH is IMF, throws when no more IMFs can be extracted
 
                 Residue = _prevH;   // reuse _prevH to avoid allocating mem
                 Imf = _newH;
@@ -168,6 +198,9 @@ namespace Processing
         { get; private set; }
     }
 
+    /// <summary>
+    /// Represents the result of an Empirical Mode Decomposition
+    /// </summary>
     public interface IImfDecomposition
     {
         IList<double[]> ImfFunctions { get; }
@@ -182,19 +215,23 @@ namespace Processing
         /// </summary>
         /// <param name="xValues"></param>
         /// <param name="yValues"></param>
-        public EmdDecomposer(double[] xValues, double[] yValues)
+        /// <param name="maxImfCount">Max number of IMFs to extract. Set to log2(N) by default, where N
+        /// is the number of data points</param>
+        public EmdDecomposer(double[] xValues, double[] yValues, int maxImfCount = Int32.MaxValue)
         {
+            maxImfCount = (int)(Math.Min(maxImfCount, Math.Log(xValues.Length, 2)) + 0.5);
+
             ImfFunctions = new List<double[]>();
             ResidueFunction = yValues;
-
+            
             Sifter s;
             do {
                 s = new Sifter(xValues, ResidueFunction, IsSiftingFinished);
-                if (s.Imf != null)
+                if (s.Imf != null) {
                     ImfFunctions.Add(s.Imf);
+                }
                 ResidueFunction = s.Residue;
-
-            } while (s.Imf != null);
+            } while (s.Imf != null && maxImfCount-- > 0);
         }
 
         public IList<double[]> ImfFunctions
@@ -209,7 +246,10 @@ namespace Processing
             double sd = 0.0;
             for (int i = 0; i < lastYValues.Length; ++i) {
                 double diff = nextLastYValues[i] - lastYValues[i];
-                sd += (diff * diff) / (nextLastYValues[i] * nextLastYValues[i]);
+                double nextSd = (diff * diff) / (nextLastYValues[i] * nextLastYValues[i]);
+                if (!Double.IsNaN(nextSd)) {
+                    sd += nextSd;
+                }
             }
             return sd < 0.3;
         }
@@ -274,7 +314,6 @@ namespace Processing
                         foreach (double value in imfFunctions[imfIndex]) {
                             resultingImf[xIndex++] += value;
                         }
-
                     }
                 }
                 for (int i = 0; i < resultingImf.Length; ++i) {
@@ -300,10 +339,12 @@ namespace Processing
         /// </summary>
         /// <param name="xValues"></param>
         /// <param name="yValues"></param>
-        /// <returns></returns>
-        public static IImfDecomposition Decompose(double[] xValues, double[] yValues)
+        /// <param name="maxImfCount">Max number of IMFs to extract. Set to log2(N) by default, where N
+        /// is the number of data points</param>
+        /// <returns>Decomposition result</returns>
+        public static IImfDecomposition Decompose(double[] xValues, double[] yValues, int maxImfCount = Int32.MaxValue)
         {
-            return new EmdDecomposer(xValues, yValues);
+            return new EmdDecomposer(xValues, yValues, maxImfCount);
         }
         /// <summary>
         /// Decompose yValues into IMFs using Ensemble Empirical Mode Decomposition
@@ -312,7 +353,7 @@ namespace Processing
         /// <param name="yValues"></param>
         /// <param name="ensembleCount">Number of generated white noise ranges</param>
         /// <param name="noiseAmplitude">Max white noise amplitude (must be positive)</param>
-        /// <returns></returns>
+        /// <returns>Decomposition result</returns>
         public static IImfDecomposition EnsembleDecompose(double[] xValues, double[] yValues, 
             int ensembleCount = 100, double noiseAmplitude = 0.5)
         {
