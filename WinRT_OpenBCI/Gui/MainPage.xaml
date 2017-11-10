@@ -5,9 +5,45 @@
     xmlns:local="using:Gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctk="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
+        xmlns:c="using:WinRTXamlToolkit.Controls.DataVisualization"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <Style x:Key="InvisibleDataPointRed" TargetType="ctk:DataPoint">
+            <Setter Property="Background" Value="Red"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Template" Value="{x:Null}"/>
+        </Style>
 
-    </Grid>
+        <Style x:Key="InvisibleLegend" TargetType="c:Legend" >
+            <Setter Property="Width" Value="0"/>
+        </Style>
+
+        <Style x:Key="ThinLine" TargetType="Polyline" >
+            <Setter Property="StrokeThickness" Value="1"/>
+        </Style>
+    </Page.Resources>
+
+    <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" RelativePanel.Above="myBtn"
+                   RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True">
+            <ctk:Chart.Palette>
+                <ctk:ResourceDictionaryCollection>
+                    <!--This hack should prevent memory leak. Unfortunately it doesn't.-->
+                </ctk:ResourceDictionaryCollection>
+            </ctk:Chart.Palette>
+            <ctk:Chart.Axes>
+                <ctk:LinearAxis Orientation="Y"/>
+            </ctk:Chart.Axes>
+            <ctk:LineSeries ItemsSource="{Binding DataSeries}" 
+                            PolylineStyle="{StaticResource ThinLine}" DataPointStyle="{StaticResource InvisibleDataPointRed}" 
+                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
+        </ctk:Chart>
+
+        <Button Name="myBtn" Content="Next chart" Command="{Binding OnNextChartPressed}" Height="100" HorizontalAlignment="Stretch"
+            RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"/>
+
+    </RelativePanel>
 </Page>
