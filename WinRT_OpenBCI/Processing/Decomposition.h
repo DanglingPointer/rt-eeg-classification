@@ -11,6 +11,175 @@ namespace Processing
 {
 #pragma region Interpolation
 
+   // Based on http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
+   // Ported from C# implementation by Ryan Seghers
+   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   struct TriDiagonalMatrix
+   {
+      typedef std::unique_ptr<TData[]> ValArray;
+
+      ValArray A;
+      ValArray B;
+      ValArray C;
+
+      const int N;
+
+      TriDiagonalMatrix(int n) : N(n), A(std::make_unique<TData[]>(n)), B(std::make_unique<TData[]>(n)), C(std::make_unique<TData[]>(n))
+      {
+         std::fill(A.get(), A.get() + n, 0.0);
+         std::fill(B.get(), B.get() + n, 0.0);
+         std::fill(C.get(), C.get() + n, 0.0);
+      }
+      ValArray Solve(ValArray d)
+      {
+         ValArray cPrime = std::make_unique<TData[]>(N);
+         cPrime[0] = C[0] / B[0];
+         for (int i = 0; i < N; ++i) {
+            cPrime[i] = C[i] / (B[i] - cPrime[i - 1] * A[i]);
+         }
+
+         ValArray dPrime = std::make_unique<TData[]>(N);
+         dPrime[0] = d[0] / B[0];
+         for (int i = 1; i < N; ++i) {
+            dPrime[i] = (d[i] - dPrime[i - 1] * A[i]) / (B[i] - cPrime[i - 1] * A[i]);
+         }
+
+         ValArray x = std::make_unique<TData[]>(N);
+         x[N - 1] = dPrime[N - 1];
+         for (int i = N - 2; i >= 0; --i) {
+            x[i] = dPrime[i] - cPrime[i] * x[i + 1];
+         }
+
+         return std::move(x);
+      }
+   };
+
+   // Based on http://en.wikipedia.org/wiki/Spline_interpolation
+   // Ported from C# implementation by Ryan Seghers
+   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   class CubicSpline
+   {
+      typedef std::unique_ptr<TData[]> ValArray;
+
+      static ValArray a, b;
+      //static int s_splineLength;
+
+      static ValArray xOrig, yOrig;
+      static int s_origLength;
+
+      static int s_lastIndex;
+
+   public:
+      CubicSpline() = delete;
+
+      static ValArray Compute(const std::vector<TData>& x, const std::vector<TData>& y, const ValArray& xs, int splineLength)
+      {
+         s_lastIndex = 0;
+         s_origLength = x.size();
+
+         ValArray px = std::make_unique<TData[]>(s_origLength);
+         std::copy(x.begin(), x.end(), px.get());
+
+         ValArray py = std::make_unique<TData[]>(s_origLength);
+         std::copy(y.begin(), y.end(), py.get());
+
+         Fit(std::move(px), std::move(py), s_origLength);
+         return Eval(xs, splineLength);
+      }
+
+   private:
+      static int GetNextXIndex(TData x)
+      {
+         while (s_lastIndex < s_origLength - 2 && x > xOrig[s_lastIndex + 1]) {
+            s_lastIndex++;
+         }
+         return s_lastIndex;
+      }
+      static TData EvalSpline(TData x, int j)
+      {
+         TData dx = xOrig[j + 1] - xOrig[j];
+         TData t = (x - xOrig[j]) / dx;
+         TData y = (1 - t) * yOrig[j] + t * yOrig[j + 1] + t * (1 - t) * (a[j] * (1 - t) + b[j] * t); 
+         return y;
+      }
+      static void Fit(ValArray x, ValArray y, int n)
+      {
+         xOrig = std::move(x);
+         yOrig = std::move(y);
+
+         ValArray r = std::make_unique<TData[]>(n); // the right hand side numbers: wikipedia page overloads b
+
+         TriDiagonalMatrix<TData> m(n);
+         TData dx1, dx2, dy1, dy2;
+
+         // First row is different (equation 16 from the article)
+         dx1 = x[1] - x[0];
+         m.C[0] = 1.0 / dx1;
+         m.B[0] = 2.0 * m.C[0];
+         r[0] = 3 * (y[1] - y[0]) / (dx1 * dx1);
+
+         // Body rows (equation 15 from the article)
+         for (int i = 1; i < n - 1; ++i) {
+            dx1 = x[i] - x[i - 1];
+            dx2 = x[i + 1] - x[i];
+
+            m.A[i] = 1.0 / dx1;
+            m.C[i] = 1.0 / dx2;
+            m.B[i] = 2.0 * (m.A[i] + m.C[i]);
+
+            dy1 = y[i] - y[i - 1];
+            dy2 = y[i + 1] - y[i];
+            r[i] = 3 * (dy1 / (dx1 * dx1) + dy2 / (dx2 * dx2));
+         }
+
+         // Last row also different (equation 17 from the article)
+         dx1 = x[n - 1] - x[n - 2];
+         dy1 = y[n - 1] - y[n - 2];
+         m.A[n - 1] = 1.0 / dx1;
+         m.B[n - 1] = 2.0 * m.A[n - 1];
+         r[n - 1] = 3 * (dy1 / (dx1 * dx1));
+
+         // k is the solution to the matrix
+         ValArray k = m.Solve(std::move(r));
+
+         // a and b are each spline's coefficients
+         a = std::make_unique<TData[]>(n - 1);
+         b = std::make_unique<TData[]>(n - 1);
+
+         for (int i = 1; i < n; i++) {
+            dx1 = x[i] - x[i - 1];
+            dy1 = y[i] - y[i - 1];
+            a[i - 1] = k[i - 1] * dx1 - dy1;  // equation 10 from the article
+            b[i - 1] = -k[i] * dx1 + dy1;     // equation 11 from the article
+         }
+      }
+      static ValArray Eval(const ValArray& x, int n)
+      {
+         ValArray y = std::make_unique<TData[]>(n);
+
+         for (int i = 0; i < n; i++) {
+            // Find which spline can be used to compute this x (by simultaneous traverse)
+            int j = GetNextXIndex(x[i]);
+
+            // Evaluate using j'th spline
+            y[i] = EvalSpline(x[i], j);
+         }
+         return std::move(y);
+      }
+   };
+   template<typename TData, typename T>
+   std::unique_ptr<TData[]> CubicSpline<TData, T>::a;
+   template<typename TData, typename T>
+   std::unique_ptr<TData[]> CubicSpline<TData, T>::b;
+   template<typename TData, typename T>
+   std::unique_ptr<TData[]> CubicSpline<TData, T>::xOrig;
+   template<typename TData, typename T>
+   std::unique_ptr<TData[]> CubicSpline<TData, T>::yOrig;
+   template<typename TData, typename T>
+   int CubicSpline<TData, T>::s_lastIndex;
+   template<typename TData, typename T>
+   int CubicSpline<TData, T>::s_origLength;
+
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    class LinearSpline
    {
@@ -33,28 +202,6 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
-   class CubicSpline
-   {
-      typedef std::unique_ptr<TData[]> UPtr;
-
-   public:
-      CubicSpline() = delete;
-
-      static UPtr Compute(const std::vector<TData>& x, const std::vector<TData>& y, const UPtr& xs, int splineLength)
-      {
-         UPtr ys = std::make_unique<TData[]>(splineLength);
-
-         TData a = (y[0] - y[1]) / (x[0] - x[1]);
-         TData b = y[0] - a * x[0];
-
-         for (int i = 0; i < splineLength; ++i) {
-            ys[i] = a * xs[i] + b;
-         }
-         return std::move(ys);
-      }
-   };
-
 #pragma endregion
 
 
@@ -71,8 +218,8 @@ namespace Processing
       UPtr m_upperEnvelope;
       UPtr m_lowerEnvelope;
 
-      int32 m_zeroCrossingCount, m_upperExtremaCount, m_lowerExtremaCount;
-      const int32 m_length;
+      int m_zeroCrossingCount, m_upperExtremaCount, m_lowerExtremaCount;
+      const int m_length;
 
    public:
       EnvelopeFinder(const UPtr& xValues, const UPtr& yValues, int length)
@@ -245,7 +392,7 @@ namespace Processing
          try {
             do {
                Sifter<TData> s(xValues, m_pResidue, m_length);
-               m_imfs.push_back(s.MoveImf());
+               m_imfs.push_back(s.MoveImf()); // might throw
                m_pResidue = s.MoveResidue();
             } while (--maxImfCount > 0);
          }
@@ -345,9 +492,13 @@ namespace Processing
          CopyUPtrToArr(decomp.MoveResidue(), m_pResidue, length);
 
          for (int imfIndex = 0; imfIndex < decomp.GetImfCount(); ++imfIndex) {
-            Vector<double>^ imf = ref new Vector<double>(length);
-
             UPtr pImf = decomp.MoveImfAt(imfIndex);
+
+            //Array<TData>^ arr = ref new Array<TData>(pImf, length);
+            //pImf.release();
+            //Vector<double>^ imf = ref new Vector<double>(arr);
+
+            Vector<double>^ imf = ref new Vector<double>(length);
             std::copy(pImf.get(), pImf.get() + length, begin(imf));
 
             m_pImfs->Append(imf);
@@ -407,7 +558,7 @@ namespace Processing
                maxImfCount = imfFunctions.size();
          }
 
-         // Compute average in parallel
+         // Compute average
 
          for (int imfIndex = 0; imfIndex < maxImfCount; ++imfIndex) {
             Vector<double>^ resultingImf = ref new Vector<double>(length, 0.0);

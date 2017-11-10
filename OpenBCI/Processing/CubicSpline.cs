@@ -129,7 +129,7 @@ namespace Spline
 			double dx = xOrig[j + 1] - xOrig[j];
 			double t = (x - xOrig[j]) / dx;
 			double y = (1 - t) * yOrig[j] + t * yOrig[j + 1] + t * (1 - t) * (a[j] * (1 - t) + b[j] * t); // equation 9
-			if (debug) Console.WriteLine("xs = {0}, j = {1}, t = {2}", x, j, t);
+			//if (debug) Console.WriteLine("xs = {0}, j = {1}, t = {2}", x, j, t);
 			return y;
 		}
 
