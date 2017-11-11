@@ -38,16 +38,6 @@ namespace Processing
             cPrime[i] = C[i] / (B[i] - cPrime[i - 1] * A[i]);
          }
 
-         // --- DEBUG BEGIN ---
-         if (std::isnan(cPrime[0])) {
-            std::vector<TData> debug_d(d.get(), d.get() + N);
-            std::vector<TData> debug_cPrime(cPrime.get(), cPrime.get() + N);
-            std::vector<TData> debug_A(A.get(), A.get() + N);
-            std::vector<TData> debug_B(B.get(), B.get() + N);
-            std::vector<TData> debug_C(C.get(), C.get() + N);
-         }
-         // --- DEBUG END ---
-
          ValArray dPrime = std::make_unique<TData[]>(N);
          dPrime[0] = d[0] / B[0];
          for (int i = 1; i < N; ++i) {
@@ -59,19 +49,6 @@ namespace Processing
          for (int i = N - 2; i >= 0; --i) {
             x[i] = dPrime[i] - cPrime[i] * x[i + 1];
          }
-
-
-         // --- DEBUG BEGIN ---
-         if (std::isnan(x[0])) {
-            std::vector<TData> debug_x(x.get(), x.get() + N);
-            std::vector<TData> debug_d(d.get(), d.get() + N);
-            std::vector<TData> debug_cPrime(cPrime.get(), cPrime.get() + N);
-            std::vector<TData> debug_dPrime(dPrime.get(), dPrime.get() + N);
-            std::vector<TData> debug_A(A.get(), A.get() + N);
-            std::vector<TData> debug_B(B.get(), B.get() + N);
-            std::vector<TData> debug_C(C.get(), C.get() + N);
-         }
-         // --- DEBUG END ---
 
          return std::move(x);
       }
@@ -157,20 +134,8 @@ namespace Processing
          tdm.B[m_origLength - 1] = 2.0 * tdm.A[m_origLength - 1];
          r[m_origLength - 1] = 3 * (dy1 / (dx1 * dx1));
 
-
-         // --- DEBUG BEGIN ---
-         std::vector<TData> debug_r(r.get(), r.get() + m_origLength);
-         // --- DEBUG END ---
-
          // k is the solution to the matrix
          ValArray k = tdm.Solve(std::move(r));
-
-         // --- DEBUG BEGIN ---
-         if (std::isnan(k[0])) {
-            std::vector<TData> debug_k(k.get(), k.get() + m_origLength);
-            std::vector<TData> debug_x(x.get(), x.get() + m_origLength);
-         }
-         // --- DEBUG END ---
          
          // a and b are each spline's coefficients
          m_a = std::make_unique<TData[]>(m_origLength - 1);
@@ -470,30 +435,60 @@ namespace Processing
 
 #pragma region C++/CX ref classes
 
-   private ref class DecomposerBase : public IImfDecomposition
+   private ref class DecomposerBase : public IImfDecompositionDouble, public IImfDecompositionSingle
    {
+      IVector<IVector<double>^>^ m_pImfsD;
+      Array<double>^ m_pResidueD;
+
+      IVector<IVector<float>^>^ m_pImfsS;
+      Array<float>^ m_pResidueS;
+
    protected private:
-      IVector<IVector<double>^>^ m_pImfs;
-      Array<double>^ m_pResidue;
+      template <typename TData>
+      IVector<IVector<TData>^>^& GetImfs();
+
+      template <typename TData>
+      Array<TData>^& GetResidue();
 
       DecomposerBase(int dataLength)
-         : m_pImfs(ref new Vector<IVector<double>^>()), m_pResidue(ref new Array<double>(dataLength))
+         : m_pImfsD(ref new Vector<IVector<double>^>()), m_pResidueD(ref new Array<double>(dataLength)),
+         m_pImfsS(ref new Vector<IVector<float>^>()), m_pResidueS(ref new Array<float>(dataLength))
       { }
 
    public:
-      virtual property IVector<IVector<double>^>^ ImfFunctions {
-         IVector<IVector<double>^>^ get()
+      virtual property IVector<IVector<double>^>^ ImfFunctionsD {
+         IVector<IVector<double>^>^ get() = IImfDecompositionDouble::ImfFunctions::get
          {
-            return m_pImfs;
+            return m_pImfsD;
          }
       }
-      virtual property Array<double>^ ResidueFunction {
-         Array<double>^ get()
+      virtual property Array<double>^ ResidueFunctionD {
+         Array<double>^ get() = IImfDecompositionDouble::ResidueFunction::get
          {
-            return m_pResidue;
+            return m_pResidueD;
+         }
+      }
+      virtual property IVector<IVector<float>^>^ ImfFunctionsS {
+         IVector<IVector<float>^>^ get() = IImfDecompositionSingle::ImfFunctions::get
+         {
+            return m_pImfsS;
+         }
+      }
+      virtual property Array<float>^ ResidueFunctionS {
+         Array<float>^ get() = IImfDecompositionSingle::ResidueFunction::get
+         {
+            return m_pResidueS;
          }
       }
    };
+   template<> 
+   inline IVector<IVector<double>^>^& DecomposerBase::GetImfs() { return m_pImfsD; }
+   template<> 
+   inline IVector<IVector<float>^>^& DecomposerBase::GetImfs() { return m_pImfsS; }
+   template<> 
+   inline Array<double>^& DecomposerBase::GetResidue() { return m_pResidueD; }
+   template<> 
+   inline Array<float>^& DecomposerBase::GetResidue() { return m_pResidueS; }
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    private ref class EmdDecomposer : public DecomposerBase
@@ -511,15 +506,15 @@ namespace Processing
 
          InternalEmdDecomposer<TData> decomp(std::move(pxValues), std::move(pyValues), length, maxImfCount);
 
-         CopyUPtrToArr(decomp.MoveResidue(), m_pResidue, length);
+         CopyUPtrToArr(decomp.MoveResidue(), GetResidue<TData>(), length);
 
          for (int imfIndex = 0; imfIndex < decomp.GetImfCount(); ++imfIndex) {
             UPtr pImf = decomp.MoveImfAt(imfIndex);
 
-            Vector<double>^ imf = ref new Vector<double>(length);
+            Vector<TData>^ imf = ref new Vector<TData>(length);
             std::copy(pImf.get(), pImf.get() + length, begin(imf));
 
-            m_pImfs->Append(imf);
+            GetImfs<TData>()->Append(imf);
          }
       }
    };
@@ -579,7 +574,7 @@ namespace Processing
          // Compute average
 
          for (int imfIndex = 0; imfIndex < maxImfCount; ++imfIndex) {
-            Vector<double>^ resultingImf = ref new Vector<double>(length, 0.0);
+            Vector<TData>^ resultingImf = ref new Vector<TData>(length, 0.0);
             int actualEnsembleCount = 0; // not all ensembles might have the same number of IMFs
 
             for (const std::vector<ValArray>& imfFunctions : imfEnsembles) {
@@ -595,9 +590,9 @@ namespace Processing
                double value = resultingImf->GetAt(i);
                resultingImf->SetAt(i, value / actualEnsembleCount);
             }
-            m_pImfs->Append(resultingImf);
+            GetImfs<TData>()->Append(resultingImf);
          }
-         m_pResidue = nullptr;
+         GetResidue<TData>() = nullptr;
       }
    };
 

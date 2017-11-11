@@ -56,7 +56,7 @@ namespace Gui
 
         private IList<double> _xData, _yData;    // data to show
         private IList<double> _yOrigData;        // original data range
-        private IImfDecomposition _decomposition;
+        private IImfDecompositionDouble _decomposition;
         private int _currentIndex;          // index of current decomposition on screen
         private volatile bool _busy;
 
@@ -103,7 +103,7 @@ namespace Gui
                     _currentIndex = 0;
                     ChartName = "Decomposing...";
                     SetBusy(true);
-                    _decomposition = await Emd.DoubleDecomposeAsync(_xData.ToArray(), _yOrigData.ToArray());
+                    _decomposition = await Emd.DecomposeAsync(_xData.ToArray(), _yOrigData.ToArray());
                     ChartName = "Intrinsic mode function 0";
                     _yData = _decomposition.ImfFunctions[_currentIndex];
                     SetBusy(false);
