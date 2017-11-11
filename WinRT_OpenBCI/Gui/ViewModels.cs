@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WinRTXamlToolkit.Controls.DataVisualization.Charting;
 
 namespace Gui
 {
@@ -46,21 +47,27 @@ namespace Gui
 
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        private const int DATA_LENGTH = 100;
+        private const int DATA_LENGTH = 1000;
         private IList<KeyValuePair<double, double>> _dataSeries;
         private String _chartName;
+
+        RelayCommand _onNextChartPressed;
+        RelayCommand _onPrevChartPressed;
 
         private IList<double> _xData, _yData;    // data to show
         private IList<double> _yOrigData;        // original data range
         private IImfDecomposition _decomposition;
         private int _currentIndex;          // index of current decomposition on screen
-        private bool _busy;
+        private volatile bool _busy;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public MainPageViewModel()
+        public MainPageViewModel(LinearAxis yAxis)
         {
+            yAxis.Minimum = -10;
+            yAxis.Maximum = 10;
+
             _dataSeries = null; // set in UpdateDataSeries()
             _chartName = "Original data";
 
@@ -70,55 +77,60 @@ namespace Gui
 
             _xData = new double[DATA_LENGTH];
             _yOrigData = new double[DATA_LENGTH];
-            
-            Random r = new Random(4);            
-            for (int i = 1; i < DATA_LENGTH; ++i) {
-                _yOrigData[i] = _yOrigData[i-1] + 2 * (r.NextDouble() - 0.5);
-                _xData[i] = i;
-            }
+
+            GenerateOrigData();
             _yData = _yOrigData;
             UpdateDataSeries();
 
-            OnNextChartPressed = new RelayCommand(async (o) => {
-                try {
-                    if (_decomposition == null) {
-                        _currentIndex = 0;
-                        ChartName = "Decomposing...";
-                        _busy = true;
-                        await Task.Run(() => {
-                            _decomposition = Emd.DoubleDecompose(_xData.ToArray(), _yOrigData.ToArray());
-                        });
-                        _busy = false;
-                        ChartName = "Imf 0";
+            _onPrevChartPressed = new RelayCommand((o) => {
+                _currentIndex--;
+                _onPrevChartPressed.ExecuteChanged(this, null);
+                if (_currentIndex >= 0) {
+                    // show previous imf
+                    _yData = _decomposition.ImfFunctions[_currentIndex];
+                    ChartName = $"Intrinsic mode function {_currentIndex}";
+                }
+                else { // _currentIndex < 0
+                        // show original
+                    _yData = _yOrigData;
+                    ChartName = "Original data";
+                }
+                UpdateDataSeries();
+            }, (o) => !_busy && _decomposition != null && _currentIndex > -1);
+
+            _onNextChartPressed = new RelayCommand(async (o) => {
+                if (_decomposition == null) {
+                    _currentIndex = 0;
+                    ChartName = "Decomposing...";
+                    SetBusy(true);
+                    _decomposition = await Emd.DoubleDecomposeAsync(_xData.ToArray(), _yOrigData.ToArray());
+                    ChartName = "Intrinsic mode function 0";
+                    _yData = _decomposition.ImfFunctions[_currentIndex];
+                    SetBusy(false);
+                }
+                else {
+                    _currentIndex++;
+                    if (_currentIndex < _decomposition.ImfFunctions.Count) {
+                        // show next imf
                         _yData = _decomposition.ImfFunctions[_currentIndex];
+                        ChartName = $"Intrinsic mode function {_currentIndex}";
+                    }
+                    else if (_currentIndex == _decomposition.ImfFunctions.Count && _decomposition.ResidueFunction != null) {
+                        // show residue
+                        _yData = _decomposition.ResidueFunction;
+                        ChartName = "Residue";
                     }
                     else {
-                        _currentIndex++;
-                        if (_currentIndex < _decomposition.ImfFunctions.Count) {
-                            // show next imf
-                            _yData = _decomposition.ImfFunctions[_currentIndex];
-                            ChartName = $"Imf {_currentIndex}";
-                        }
-                        else if (_currentIndex == _decomposition.ImfFunctions.Count) {
-                            // show residue
-                            _yData = _decomposition.ResidueFunction;
-                            ChartName = "Residue";
-                        }
-                        else {
-                            // reset
-                            _currentIndex = 0;
-                            _decomposition = null;
-                            _yData = _yOrigData;
-                            ChartName = "Original data";
-                        }
+                        // reset
+                        _decomposition = null;
+                        _currentIndex = 0;
+                        GenerateOrigData();
+                        _yData = _yOrigData;
+                        ChartName = "Original data";
                     }
-                    UpdateDataSeries();
+                    _onPrevChartPressed.ExecuteChanged(this, null);
                 }
-                catch (Exception e) {
-                    Debug.WriteLine(e.Message);
-                    Debug.WriteLine(e.Source);
-                    Debug.WriteLine(e.StackTrace);
-                }
+                UpdateDataSeries();
             }, (o) => !_busy);
         }
         public IList<KeyValuePair<double, double>> DataSeries
@@ -127,9 +139,14 @@ namespace Gui
         /// Button handler
         /// </summary>
         public ICommand OnNextChartPressed
-        { get; private set; }
+        { get => _onNextChartPressed; }
         /// <summary>
-        /// Button name
+        /// Button handler
+        /// </summary>
+        public ICommand OnPrevChartPressed
+        { get => _onPrevChartPressed; }
+        /// <summary>
+        /// Chart title
         /// </summary>
         public string ChartName
         {
@@ -137,6 +154,14 @@ namespace Gui
             set {
                 _chartName = value;
                 OnPropertyChanged(nameof(ChartName));
+            }
+        }
+        private void GenerateOrigData()
+        {
+            Random r = new Random();
+            for (int i = 1; i < DATA_LENGTH; ++i) {
+                _yOrigData[i] = _yOrigData[i - 1] + 1 * (r.NextDouble() - 0.5);
+                _xData[i] = i;
             }
         }
         private void OnPropertyChanged(string propertyName)
@@ -151,10 +176,15 @@ namespace Gui
             var newSeries = new List<KeyValuePair<double, double>>();
             for (int i = 0; i < DATA_LENGTH; ++i) {
                 newSeries.Add(new KeyValuePair<double, double>(_xData[i], _yData[i]));
-                Debug.WriteLine($"--- x = {_xData[i]}, y = {_yData[i]} ---");
             }
             _dataSeries = newSeries;
             OnPropertyChanged(nameof(DataSeries));
+        }
+        private void SetBusy(bool busy)
+        {
+            _busy = busy;
+            _onNextChartPressed.ExecuteChanged(this, null);
+            _onPrevChartPressed.ExecuteChanged(this, null);
         }
     }
 

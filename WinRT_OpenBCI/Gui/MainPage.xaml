@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <Style x:Key="InvisibleDataPointRed" TargetType="ctk:DataPoint">
+        <Style x:Key="InvisibleRedDataPoint" TargetType="ctk:DataPoint">
             <Setter Property="Background" Value="Red"/>
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="Template" Value="{x:Null}"/>
@@ -20,30 +20,48 @@
             <Setter Property="Width" Value="0"/>
         </Style>
 
-        <Style x:Key="ThinLine" TargetType="Polyline" >
+        <Style x:Key="ThinPolyline" TargetType="Polyline" >
             <Setter Property="StrokeThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="BtnBorderStyle" TargetType="Button" >
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Black" />
+            <!--<Setter Property="Background" Value="White" />-->
+            <Setter Property="Margin" Value="10" />
         </Style>
     </Page.Resources>
 
     <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-        <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" RelativePanel.Above="myBtn"
-                   RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True">
+        <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" Margin="10" RelativePanel.Above="myGrid"
+                   RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True" 
+                   BorderBrush="Black" BorderThickness="1">
             <ctk:Chart.Palette>
                 <ctk:ResourceDictionaryCollection>
-                    <!--This hack should prevent memory leak. Unfortunately it doesn't.-->
+                    <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
                 </ctk:ResourceDictionaryCollection>
             </ctk:Chart.Palette>
             <ctk:Chart.Axes>
-                <ctk:LinearAxis Orientation="Y"/>
+                <ctk:LinearAxis Name="yAxis" Orientation="Y" />
             </ctk:Chart.Axes>
             <ctk:LineSeries ItemsSource="{Binding DataSeries}" 
-                            PolylineStyle="{StaticResource ThinLine}" DataPointStyle="{StaticResource InvisibleDataPointRed}" 
+                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
         </ctk:Chart>
 
-        <Button Name="myBtn" Content="Next chart" Command="{Binding OnNextChartPressed}" Height="100" HorizontalAlignment="Stretch"
-            RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"/>
+        <Grid Height="100" HorizontalAlignment="Stretch" Name="myGrid"
+            RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Button Content="Previous chart" Command="{Binding OnPrevChartPressed}" Style="{StaticResource BtnBorderStyle}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" />
+            <Button Content="Next chart" Command="{Binding OnNextChartPressed}" Style="{StaticResource BtnBorderStyle}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1" />
+            
+        </Grid>
+        
 
     </RelativePanel>
 </Page>

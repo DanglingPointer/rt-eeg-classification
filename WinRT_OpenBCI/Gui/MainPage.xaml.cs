@@ -26,11 +26,7 @@ namespace Gui
         public MainPage()
         {
             this.InitializeComponent();
-
-            ApplicationView.PreferredLaunchViewSize = new Size(1000, 320);
-            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
-
-            DataContext = new MainPageViewModel();
+            DataContext = new MainPageViewModel(yAxis);
         }
     }
 }

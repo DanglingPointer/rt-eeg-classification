@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include <limits>
+#include <ppltasks.h>
 #include "IImfDecomposition.h"
+
+using namespace Windows::Foundation;
 
 namespace Processing
 {
@@ -9,32 +12,33 @@ namespace Processing
       Emd();
 
    public:
-      static IImfDecomposition^ SingleDecompose(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount);
+      static IAsyncOperation<IImfDecomposition^>^ SingleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, int maxImfCount);
 
-      static IImfDecomposition^ SingleDecompose(const Array<double>^ xValues, const Array<double>^ yValues);
-
-      static IImfDecomposition^ DoubleDecompose(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount);
-
-      static IImfDecomposition^ DoubleDecompose(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<IImfDecomposition^>^ SingleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
 
 
+      static IAsyncOperation<IImfDecomposition^>^ DoubleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount);
 
-      static IImfDecomposition^ SingleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues,
-                                                        int ensembleCount, double noiseSD);
-
-      static IImfDecomposition^ SingleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues,
-                                                        int ensembleCount);
-
-      static IImfDecomposition^ SingleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<IImfDecomposition^>^ DoubleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
 
 
 
-      static IImfDecomposition^ DoubleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues,
-                                                        int ensembleCount, double noiseSD);
+      static IAsyncOperation<IImfDecomposition^>^ SingleEnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
+                                                        float noiseSD, int ensembleCount);
 
-      static IImfDecomposition^ DoubleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues,
-                                                        int ensembleCount);
+      static IAsyncOperation<IImfDecomposition^>^ SingleEnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
+                                                        float noiseSD);
 
-      static IImfDecomposition^ DoubleEnsembleDecompose(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<IImfDecomposition^>^ SingleEnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
+
+
+
+      static IAsyncOperation<IImfDecomposition^>^ DoubleEnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
+                                                        double noiseSD, int ensembleCount);
+
+      static IAsyncOperation<IImfDecomposition^>^ DoubleEnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
+                                                        double noiseSD);
+
+      static IAsyncOperation<IImfDecomposition^>^ DoubleEnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
    };
 }

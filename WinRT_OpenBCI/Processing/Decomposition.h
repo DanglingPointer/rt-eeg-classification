@@ -34,9 +34,19 @@ namespace Processing
       {
          ValArray cPrime = std::make_unique<TData[]>(N);
          cPrime[0] = C[0] / B[0];
-         for (int i = 0; i < N; ++i) {
+         for (int i = 1; i < N; ++i) {
             cPrime[i] = C[i] / (B[i] - cPrime[i - 1] * A[i]);
          }
+
+         // --- DEBUG BEGIN ---
+         if (std::isnan(cPrime[0])) {
+            std::vector<TData> debug_d(d.get(), d.get() + N);
+            std::vector<TData> debug_cPrime(cPrime.get(), cPrime.get() + N);
+            std::vector<TData> debug_A(A.get(), A.get() + N);
+            std::vector<TData> debug_B(B.get(), B.get() + N);
+            std::vector<TData> debug_C(C.get(), C.get() + N);
+         }
+         // --- DEBUG END ---
 
          ValArray dPrime = std::make_unique<TData[]>(N);
          dPrime[0] = d[0] / B[0];
@@ -49,6 +59,19 @@ namespace Processing
          for (int i = N - 2; i >= 0; --i) {
             x[i] = dPrime[i] - cPrime[i] * x[i + 1];
          }
+
+
+         // --- DEBUG BEGIN ---
+         if (std::isnan(x[0])) {
+            std::vector<TData> debug_x(x.get(), x.get() + N);
+            std::vector<TData> debug_d(d.get(), d.get() + N);
+            std::vector<TData> debug_cPrime(cPrime.get(), cPrime.get() + N);
+            std::vector<TData> debug_dPrime(dPrime.get(), dPrime.get() + N);
+            std::vector<TData> debug_A(A.get(), A.get() + N);
+            std::vector<TData> debug_B(B.get(), B.get() + N);
+            std::vector<TData> debug_C(C.get(), C.get() + N);
+         }
+         // --- DEBUG END ---
 
          return std::move(x);
       }
@@ -134,8 +157,20 @@ namespace Processing
          tdm.B[m_origLength - 1] = 2.0 * tdm.A[m_origLength - 1];
          r[m_origLength - 1] = 3 * (dy1 / (dx1 * dx1));
 
+
+         // --- DEBUG BEGIN ---
+         std::vector<TData> debug_r(r.get(), r.get() + m_origLength);
+         // --- DEBUG END ---
+
          // k is the solution to the matrix
          ValArray k = tdm.Solve(std::move(r));
+
+         // --- DEBUG BEGIN ---
+         if (std::isnan(k[0])) {
+            std::vector<TData> debug_k(k.get(), k.get() + m_origLength);
+            std::vector<TData> debug_x(x.get(), x.get() + m_origLength);
+         }
+         // --- DEBUG END ---
          
          // a and b are each spline's coefficients
          m_a = std::make_unique<TData[]>(m_origLength - 1);
@@ -466,7 +501,7 @@ namespace Processing
       typedef std::unique_ptr<TData[]> UPtr;
 
    internal:
-      EmdDecomposer(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount)
+      EmdDecomposer(const Array<TData>^ xValues, const Array<TData>^ yValues, int maxImfCount)
          : DecomposerBase(xValues->Length)
       {
          const int length = xValues->Length;
@@ -495,7 +530,7 @@ namespace Processing
       typedef std::unique_ptr<TData[]> UPtr;
 
    internal:
-      EemdDecomposer(const Array<double>^ xValues, const Array<double>^ yValues, int ensembleCount, TData noiseSD)
+      EemdDecomposer(const Array<TData>^ xValues, const Array<TData>^ yValues, int ensembleCount, TData noiseSD)
          : DecomposerBase(xValues->Length)
       {
          const int length = xValues->Length;
@@ -545,7 +580,7 @@ namespace Processing
 
          for (int imfIndex = 0; imfIndex < maxImfCount; ++imfIndex) {
             Vector<double>^ resultingImf = ref new Vector<double>(length, 0.0);
-            int actualEnsembleCount = 0;
+            int actualEnsembleCount = 0; // not all ensembles might have the same number of IMFs
 
             for (const std::vector<ValArray>& imfFunctions : imfEnsembles) {
                if (imfIndex < imfFunctions.size()) {
