@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include <limits>
-#include <ppltasks.h>
+//#include <ppltasks.h>
 #include "IImfDecomposition.h"
 
 using namespace Windows::Foundation;
+using namespace Platform;
 
 namespace Processing
 {

@@ -9,11 +9,15 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Emd.cpp" />
+    <ClCompile Include="Hsa.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="IImfDecomposition.h" />
     <ClInclude Include="Decomposition.h" />
     <ClInclude Include="Emd.h" />
+    <ClInclude Include="ISpectralAnalysis.h" />
+    <ClInclude Include="Hsa.h" />
+    <ClInclude Include="Analysis.h" />
   </ItemGroup>
 </Project>

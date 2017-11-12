@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include "ISpectralAnalysis.h"
 #include "Emd.h"
 #include "Decomposition.h"
 

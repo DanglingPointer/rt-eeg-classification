@@ -1,8 +1,6 @@
 #pragma once
-#include <collection.h>
 
 using namespace Platform;
-using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
 
 namespace Processing

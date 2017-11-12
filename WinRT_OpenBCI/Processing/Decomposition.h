@@ -4,8 +4,11 @@
 #include <cmath>
 #include <stdexcept>
 #include <random>
-#include <ppl.h>
 #include "IImfDecomposition.h"
+
+using namespace Platform;
+using namespace Platform::Collections;
+using namespace Windows::Foundation::Collections;
 
 namespace Processing
 {

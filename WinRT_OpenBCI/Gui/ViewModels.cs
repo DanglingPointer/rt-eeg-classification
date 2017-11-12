@@ -48,15 +48,15 @@ namespace Gui
     public class MainPageViewModel : INotifyPropertyChanged
     {
         private const int DATA_LENGTH = 1000;
-        private IList<KeyValuePair<double, double>> _dataSeries;
+        private IList<KeyValuePair<float, float>> _dataSeries;
         private String _chartName;
 
         RelayCommand _onNextChartPressed;
         RelayCommand _onPrevChartPressed;
 
-        private IList<double> _xData, _yData;    // data to show
-        private IList<double> _yOrigData;        // original data range
-        private IImfDecompositionDouble _decomposition;
+        private IList<float> _xData, _yData;    // data to show
+        private IList<float> _yOrigData;        // original data range
+        private IImfDecompositionSingle _decomposition;
         private int _currentIndex;          // index of current decomposition on screen
         private volatile bool _busy;
 
@@ -75,8 +75,8 @@ namespace Gui
             _currentIndex = 0;
             _decomposition = null;
 
-            _xData = new double[DATA_LENGTH];
-            _yOrigData = new double[DATA_LENGTH];
+            _xData = new float[DATA_LENGTH];
+            _yOrigData = new float[DATA_LENGTH];
 
             GenerateOrigData();
             _yData = _yOrigData;
@@ -103,7 +103,7 @@ namespace Gui
                     _currentIndex = 0;
                     ChartName = "Decomposing...";
                     SetBusy(true);
-                    _decomposition = await Emd.DecomposeAsync(_xData.ToArray(), _yOrigData.ToArray());
+                    _decomposition = await Emd.EnsembleDecomposeAsync(_xData.ToArray(), _yOrigData.ToArray(), 1.0f, 100);
                     ChartName = "Intrinsic mode function 0";
                     _yData = _decomposition.ImfFunctions[_currentIndex];
                     SetBusy(false);
@@ -133,7 +133,7 @@ namespace Gui
                 UpdateDataSeries();
             }, (o) => !_busy);
         }
-        public IList<KeyValuePair<double, double>> DataSeries
+        public IList<KeyValuePair<float, float>> DataSeries
         { get => _dataSeries; }
         /// <summary>
         /// Button handler
@@ -160,7 +160,7 @@ namespace Gui
         {
             Random r = new Random();
             for (int i = 1; i < DATA_LENGTH; ++i) {
-                _yOrigData[i] = _yOrigData[i - 1] + 1 * (r.NextDouble() - 0.5);
+                _yOrigData[i] = _yOrigData[i - 1] + 1 * (float)(r.NextDouble() - 0.5);
                 _xData[i] = i;
             }
         }
@@ -173,9 +173,9 @@ namespace Gui
         /// </summary>
         private void UpdateDataSeries()
         {
-            var newSeries = new List<KeyValuePair<double, double>>();
+            var newSeries = new List<KeyValuePair<float, float>>();
             for (int i = 0; i < DATA_LENGTH; ++i) {
-                newSeries.Add(new KeyValuePair<double, double>(_xData[i], _yData[i]));
+                newSeries.Add(new KeyValuePair<float, float>(_xData[i], _yData[i]));
             }
             _dataSeries = newSeries;
             OnPropertyChanged(nameof(DataSeries));
