@@ -12,9 +12,14 @@ namespace Processing
       Hsa();
 
    public:
-      static IAsyncOperation<ISpectralAnalysisDouble^>^ AnalyseAsync(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<ISpectralAnalysisDouble^>^ AnalyseAsync(const Array<double>^ yValues, const Array<double>^ xValues);
 
-      static IAsyncOperation<ISpectralAnalysisSingle^>^ AnalyseAsync(const Array<float>^ xValues, const Array<float>^ yValues);
+      static IAsyncOperation<ISpectralAnalysisDouble^>^ AnalyseAsync(const Array<double>^ yValues, double timeStep);
+
+
+      static IAsyncOperation<ISpectralAnalysisSingle^>^ AnalyseAsync(const Array<float>^ yValues, const Array<float>^ xValues);
+
+      static IAsyncOperation<ISpectralAnalysisSingle^>^ AnalyseAsync(const Array<float>^ yValues, float timeStep);
    };
 }
 

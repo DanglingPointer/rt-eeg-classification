@@ -12,10 +12,13 @@ using namespace Platform;
 
 namespace Processing
 {
-   inline int BitReversal(int value, int bitsCount)
+#pragma region Numerical Transforms
+
+   template <typename TInt, typename = std::enable_if<std::is_integral_v<TInt>>>
+   inline TInt BitReversal(TInt value, size_t bitsCount)
    {
-      int res = 0;
-      for (int i = 0; i < bitsCount; ++i) {
+      TInt res = 0;
+      for (size_t i = 0; i < bitsCount; ++i) {
          if (value & (1 << (bitsCount-1 - i)) )
             res |= (1 << i);
       }
@@ -31,22 +34,22 @@ namespace Processing
 
    public:
       // Uses zero-padding if length is not power of 2
-      static CvalArr Forward(std::unique_ptr<Val[]> data, int length)
+      static CvalArr Forward(std::unique_ptr<Val[]> data, int length, int *pResultLength)
       {
-         int newLength = 1;
-         while (newLength < length)
-            newLength *= 2;
+         *pResultLength = 1;
+         while (*pResultLength < length)
+            *pResultLength *= 2;
 
-         CvalArr input = std::make_unique<Cval[]>(newLength);
+         CvalArr input = std::make_unique<Cval[]>(*pResultLength);
 
          int i;
          for (i = 0; i < length; ++i) {
             input[i] = Cval(data[i], 0.0);
          }
-         for (; i < newLength; ++i) {
+         for (; i < *pResultLength; ++i) {
             input[i] = Cval(0.0, 0.0);
          }
-         return RecursiveForward(std::move(input), length); // or IterativeForward
+         return IterativeForward(std::move(input), *pResultLength); // or RecursiveForward()
       }
       // Method 4 from here: https://www.dsprelated.com/showarticle/800.php
       // Length must be a power of 2
@@ -55,16 +58,17 @@ namespace Processing
          for (int i = 0; i < length; ++i) {
             data[i].imag(-1 * data[i].imag());
          }
-         data = IterativeForward(std::move(data), length);
+         data = IterativeForward(std::move(data), length); // or RecursiveForward()
          for (int i = 0; i < length; ++i) {
             data[i].imag(-1 * data[i].imag());
-            data[i] /= length;
+            data[i] /= (Val)length;
          }
          return std::move(data);
       }
 
    private:
       // "Introduction To Algorithms", p.917
+      // n must be a power of 2
       static CvalArr IterativeForward(CvalArr a, int n)
       {
          const Cval i(0, 1);
@@ -72,7 +76,7 @@ namespace Processing
          int stageCount = std::log2(n);
          CvalArr A = std::make_unique<Cval[]>(n);
          for (int k = 0; k < n; ++k) {
-            A[BitReversal(k, stageCount)] = a[k];
+            A[BitReversal<int>(k, stageCount)] = a[k];
          }
 
          for (int s = 1; s <= stageCount; ++s) {
@@ -93,6 +97,7 @@ namespace Processing
          return std::move(A);
       }
       // "Introduction To Algorithms", p.911
+      // n must be a power of 2
       static CvalArr RecursiveForward(CvalArr a, int n)
       {
          if (n == 1) {
@@ -139,26 +144,82 @@ namespace Processing
    };
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   class HilbertTransform
+   {
+      typedef TData Val; // value type
+      typedef std::unique_ptr<Val[]> ValArr;
+
+      typedef std::complex<Val> Cval; // complex value type
+      typedef std::unique_ptr<Cval[]> CvalArr;
+
+   public:
+      // Matlab algorithm: https://se.mathworks.com/help/signal/ref/hilbert.html#f7-960889
+      // The result array is at least as long as the input
+      static CvalArr Forward(ValArr realData, int length)
+      {
+         int fftLength;
+         CvalArr ffted = FastFourierTransform<Val>::Forward(std::move(realData), length, &fftLength);
+         if (fftLength > 1) {
+            int i = 1;                     // ffted[0] is unchanged
+            for (; i < fftLength / 2; ++i) // the rest of the first half is doubled
+               ffted[i] *= 2.0;
+            i++;                           // ffted[fftLength/2] is unchanged
+            for (; i < fftLength; ++i)     // the rest are zeros
+               ffted[i] = 0.0;
+         }
+         CvalArr iffted = FastFourierTransform<Val>::Inverse(std::move(ffted), fftLength);
+         return std::move(iffted);
+      }
+   };
+
+#pragma endregion
+
+
+#pragma region C++/CX ref classes
+
+   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    private ref class SpectralAnalyzer : public ISpectralAnalysisDouble, public ISpectralAnalysisSingle
    {
-      Array<TData>^ m_pAnalyticFunc;
+      typedef std::unique_ptr<TData[]> Uptr;
+      typedef std::unique_ptr<std::complex<TData>[]> Cuptr;
 
+      const int m_length;
       Array<TData>^ m_pInstAmpl;
-
       Array<TData>^ m_pInstPhas;
-
       Array<TData>^ m_pInstFreq;
 
+   internal:
+      SpectralAnalyzer(const Array<TData>^ yValues, TData timeStep) : m_length(yValues->Length),
+         m_pInstAmpl(ref new Array<TData>(m_length)), m_pInstPhas(ref new Array<TData>(m_length)), m_pInstFreq(ref new Array<TData>(m_length - 1))
+      {
+         Uptr pdata = std::make_unique<TData[]>(m_length);
+         memcpy(pdata.get(), yValues->Data, sizeof(TData) * m_length);
 
+         Cuptr hilberted = HilbertTransform<TData>::Forward(std::move(pdata), m_length);
+
+         auto fillAmplTask = [&hilberted, this]() {
+            for (int i = 0; i < m_length; ++i)
+               this->m_pInstAmpl[i] = std::sqrt(hilberted[i].real() * hilberted[i].real() + hilberted[i].imag() * hilberted[i].imag());            
+         };
+         auto fillPhasFreqTask = [&hilberted, this, timeStep]() {
+            this->m_pInstPhas[0] = std::atan2(hilberted[0].imag(), hilberted[0].real());
+            for (int i = 1; i < m_length; ++i) {
+               this->m_pInstPhas[i] = std::atan2(hilberted[i].imag(), hilberted[i].real());
+               this->m_pInstFreq[i - 1] = (m_pInstPhas[i] - m_pInstPhas[i - 1]) / timeStep;
+            }
+         };
+
+         if (m_length >= 100) {
+            concurrency::parallel_invoke(fillAmplTask, fillPhasFreqTask);
+         }
+         else {
+            fillAmplTask();
+            fillAmplTask();
+         }
+      }
 
    public:
       // Inherited via ISpectralAnalysisDouble
-      virtual property Array<double>^ AnalyticFunctionD {
-         Array<double>^ get() = ISpectralAnalysisDouble::AnalyticFunction::get
-         {
-            return reinterpret_cast<Array<double>^>(m_pAnalyticFunc);
-         }
-      }
       virtual property Array<double>^ InstAmplitudesD {
          Array<double>^ get() = ISpectralAnalysisDouble::InstAmplitudes::get
          {
@@ -178,12 +239,6 @@ namespace Processing
          }
       }
       // Inherited via ISpectralAnalysisSingle
-      virtual property Array<float>^ AnalyticFunctionS {
-         Array<float>^ get() = ISpectralAnalysisSingle::AnalyticFunction::get
-         {
-            return reinterpret_cast<Array<float>^>(m_pAnalyticFunc);
-         }
-      }
       virtual property Array<float>^ InstAmplitudesS {
          Array<float>^ get() = ISpectralAnalysisSingle::InstAmplitudes::get
          {
@@ -203,5 +258,7 @@ namespace Processing
          }
       }
    };
+
+#pragma endregion
 
 }

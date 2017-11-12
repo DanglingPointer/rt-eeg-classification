@@ -5,6 +5,7 @@ using namespace Windows::Foundation::Collections;
 
 namespace Processing
 {
+   // Double-precision results of an Empirical Mode decomposiiton
    public interface class IImfDecompositionDouble
    {
       property IVector<IVector<double>^>^ ImfFunctions {
@@ -15,6 +16,7 @@ namespace Processing
       }
    };
 
+   // Single-precision results of an Empirical Mode decomposiiton
    public interface class IImfDecompositionSingle
    {
       property IVector<IVector<float>^>^ ImfFunctions {

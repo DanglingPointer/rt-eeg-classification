@@ -1,5 +1,4 @@
 ﻿#pragma once
-//#include <ppltasks.h>
 #include "IImfDecomposition.h"
 
 using namespace Windows::Foundation;
@@ -7,6 +6,7 @@ using namespace Platform;
 
 namespace Processing
 {
+   // Empirical mode decomposition
    public ref class Emd sealed
    {
       Emd();

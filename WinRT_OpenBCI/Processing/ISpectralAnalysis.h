@@ -4,11 +4,9 @@ using namespace Platform;
 
 namespace Processing
 {
+   // Double-precision results of a spectral analysis
    public interface class ISpectralAnalysisDouble
    {
-      property Array<double>^ AnalyticFunction {
-         Array<double>^ get();
-      }
       property Array<double>^ InstAmplitudes {
          Array<double>^ get();
       }
@@ -19,11 +17,10 @@ namespace Processing
          Array<double>^ get();
       }
    };
+
+   // Single-precision results of a spectral analysis
    public interface class ISpectralAnalysisSingle
    {
-      property Array<float>^ AnalyticFunction {
-         Array<float>^ get();
-      }
       property Array<float>^ InstAmplitudes {
          Array<float>^ get();
       }
