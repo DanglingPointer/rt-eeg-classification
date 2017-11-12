@@ -62,7 +62,7 @@ namespace Gui
 
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        
         public MainPageViewModel(LinearAxis yAxis)
         {
             yAxis.Minimum = -10;

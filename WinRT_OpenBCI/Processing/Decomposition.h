@@ -453,9 +453,8 @@ namespace Processing
       template <typename TData>
       Array<TData>^& GetResidue();
 
-      DecomposerBase(int dataLength)
-         : m_pImfsD(ref new Vector<IVector<double>^>()), m_pResidueD(ref new Array<double>(dataLength)),
-         m_pImfsS(ref new Vector<IVector<float>^>()), m_pResidueS(ref new Array<float>(dataLength))
+      DecomposerBase()
+         : m_pImfsD(nullptr), m_pResidueD(nullptr), m_pImfsS(nullptr), m_pResidueS(nullptr)
       { }
 
    public:
@@ -500,9 +499,12 @@ namespace Processing
 
    internal:
       EmdDecomposer(const Array<TData>^ xValues, const Array<TData>^ yValues, int maxImfCount)
-         : DecomposerBase(xValues->Length)
+         : DecomposerBase()
       {
          const int length = xValues->Length;
+         GetResidue<TData>() = ref new Array<TData>(length);
+         GetImfs<TData>() = ref new Vector<IVector<TData>^>();
+
 
          UPtr pxValues = CopyArrayToUPtr(xValues, std::make_unique<TData[]>(length), length);
          UPtr pyValues = CopyArrayToUPtr(yValues, std::make_unique<TData[]>(length), length);
@@ -529,9 +531,10 @@ namespace Processing
 
    internal:
       EemdDecomposer(const Array<TData>^ xValues, const Array<TData>^ yValues, int ensembleCount, TData noiseSD)
-         : DecomposerBase(xValues->Length)
+         : DecomposerBase()
       {
          const int length = xValues->Length;
+         GetImfs<TData>() = ref new Vector<IVector<TData>^>();
 
          std::vector<UPtr> yValuesEnsembles(ensembleCount);
 
@@ -595,7 +598,6 @@ namespace Processing
             }
             GetImfs<TData>()->Append(resultingImf);
          }
-         GetResidue<TData>() = nullptr;
       }
    };
 

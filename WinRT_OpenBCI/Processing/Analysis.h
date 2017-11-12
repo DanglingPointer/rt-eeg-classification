@@ -28,7 +28,7 @@ namespace Processing
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    class FastFourierTransform
    {
-      typedef TData Val; // value type
+      typedef TData Val;              // value type
       typedef std::complex<Val> Cval; // complex value type
       typedef std::unique_ptr<Cval[]> CvalArr;
 
@@ -67,7 +67,7 @@ namespace Processing
       }
 
    private:
-      // "Introduction To Algorithms", p.917
+      // Parallelized algorithm from "Introduction To Algorithms", p.917
       // n must be a power of 2
       static CvalArr IterativeForward(CvalArr a, int n)
       {
@@ -96,51 +96,51 @@ namespace Processing
          }
          return std::move(A);
       }
-      // "Introduction To Algorithms", p.911
-      // n must be a power of 2
-      static CvalArr RecursiveForward(CvalArr a, int n)
-      {
-         if (n == 1) {
-            return std::move(a);
-         }
-         const Cval i(0, 1);
-         const Cval wn = std::exp(2 * (Val)M_PI * i / (Val)n);
+      //// "Introduction To Algorithms", p.911
+      //// n must be a power of 2
+      //static CvalArr RecursiveForward(CvalArr a, int n)
+      //{
+      //   if (n == 1) {
+      //      return std::move(a);
+      //   }
+      //   const Cval i(0, 1);
+      //   const Cval wn = std::exp(2 * (Val)M_PI * i / (Val)n);
 
-         CvalArr aEven = std::make_unique<Cval[]>(n / 2);    
-         CvalArr aOdd = std::make_unique<Cval[]>(n / 2);
+      //   CvalArr aEven = std::make_unique<Cval[]>(n / 2);    
+      //   CvalArr aOdd = std::make_unique<Cval[]>(n / 2);
 
-         auto evenTask = [&aEven, &a, n]() {
-            int index = 0;
-            for (int i = 0; i <= n - 2; i += 2) {
-               aEven[index++] = a[i];
-            }
-            aEven = RecursiveForward(std::move(aEven), index);
-         };
-         auto oddTask = [&aOdd, &a, n]() {
-            int index = 0;
-            for (int i = 1; i <= n - 1; i += 2) {
-               aOdd[index++] = a[i];
-            }
-            aOdd = RecursiveForward(std::move(aOdd), index);
-         };
-         if (n > 64) {
-            concurrency::parallel_invoke(evenTask, oddTask);
-         }
-         else {
-            evenTask();
-            oddTask();
-         }
+      //   auto evenTask = [&aEven, &a, n]() {
+      //      int index = 0;
+      //      for (int i = 0; i <= n - 2; i += 2) {
+      //         aEven[index++] = a[i];
+      //      }
+      //      aEven = RecursiveForward(std::move(aEven), index);
+      //   };
+      //   auto oddTask = [&aOdd, &a, n]() {
+      //      int index = 0;
+      //      for (int i = 1; i <= n - 1; i += 2) {
+      //         aOdd[index++] = a[i];
+      //      }
+      //      aOdd = RecursiveForward(std::move(aOdd), index);
+      //   };
+      //   if (n > 64) {
+      //      concurrency::parallel_invoke(evenTask, oddTask);
+      //   }
+      //   else {
+      //      evenTask();
+      //      oddTask();
+      //   }
 
-         int halfN = n / 2;
-         Cval w(1, 0);
-         for (int k = 0; k < halfN; ++k) {
-            Cval t = w * aOdd[k];
-            a[k] = aEven[k] + t;
-            a[k + halfN] = aEven[k] - t;
-            w *= wn;
-         }
-         return std::move(a);
-      }
+      //   int halfN = n / 2;
+      //   Cval w(1, 0);
+      //   for (int k = 0; k < halfN; ++k) {
+      //      Cval t = w * aOdd[k];
+      //      a[k] = aEven[k] + t;
+      //      a[k + halfN] = aEven[k] - t;
+      //      w *= wn;
+      //   }
+      //   return std::move(a);
+      //}
    };
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
@@ -178,18 +178,18 @@ namespace Processing
 #pragma region C++/CX ref classes
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
-   private ref class SpectralAnalyzer : public ISpectralAnalysisDouble, public ISpectralAnalysisSingle
+   private ref class SpectralAnalyzerBase
    {
       typedef std::unique_ptr<TData[]> Uptr;
       typedef std::unique_ptr<std::complex<TData>[]> Cuptr;
 
+   private protected:
       const int m_length;
       Array<TData>^ m_pInstAmpl;
       Array<TData>^ m_pInstPhas;
       Array<TData>^ m_pInstFreq;
 
-   internal:
-      SpectralAnalyzer(const Array<TData>^ yValues, TData timeStep) : m_length(yValues->Length),
+      SpectralAnalyzerBase(const Array<TData>^ yValues, TData timeStep) : m_length(yValues->Length),
          m_pInstAmpl(ref new Array<TData>(m_length)), m_pInstPhas(ref new Array<TData>(m_length)), m_pInstFreq(ref new Array<TData>(m_length - 1))
       {
          Uptr pdata = std::make_unique<TData[]>(m_length);
@@ -217,53 +217,68 @@ namespace Processing
             fillPhasFreqTask();
          }
       }
+   };
 
+   template <typename TData>
+   ref class SpectralAnalyzer;
+
+   template <>
+   private ref class SpectralAnalyzer<double> : public SpectralAnalyzerBase<double>, public ISpectralAnalysisDouble
+   {
+   internal:
+      SpectralAnalyzer(const Array<double>^ yValues, double timeStep) 
+         : SpectralAnalyzerBase(yValues, timeStep)
+      { }
    public:
       // Inherited via ISpectralAnalysisDouble
-      virtual property Array<double>^ InstAmplitudesD {
-         Array<double>^ get() = ISpectralAnalysisDouble::InstAmplitudes::get
+      virtual property Array<double>^ InstAmplitudes {
+         Array<double>^ get()
          {
-            return reinterpret_cast<Array<double>^>(m_pInstAmpl);
+            return m_pInstAmpl;
          }
       }
-      virtual property Array<double>^ InstPhasesD {
-         Array<double>^ get() = ISpectralAnalysisDouble::InstPhases::get
+      virtual property Array<double>^ InstPhases {
+         Array<double>^ get()
          {
-            return reinterpret_cast<Array<double>^>(m_pInstPhas);
+            return m_pInstPhas;
          }
       }
-      virtual property Array<double>^ InstFrequenciesD {
-         Array<double>^ get() = ISpectralAnalysisDouble::InstFrequencies::get
+      virtual property Array<double>^ InstFrequencies {
+         Array<double>^ get()
          {
-            return reinterpret_cast<Array<double>^>(m_pInstFreq);
-         }
-      }
-      // Inherited via ISpectralAnalysisSingle
-      virtual property Array<float>^ InstAmplitudesS {
-         Array<float>^ get() = ISpectralAnalysisSingle::InstAmplitudes::get
-         {
-            return reinterpret_cast<Array<float>^>(m_pInstAmpl);
-         }
-      }
-      virtual property Array<float>^ InstPhasesS {
-         Array<float>^ get() = ISpectralAnalysisSingle::InstPhases::get
-         {
-            return reinterpret_cast<Array<float>^>(m_pInstPhas);
-         }
-      }
-      virtual property Array<float>^ InstFrequenciesS {
-         Array<float>^ get() = ISpectralAnalysisSingle::InstFrequencies::get
-         {
-            return reinterpret_cast<Array<float>^>(m_pInstFreq);
+            return m_pInstFreq;
          }
       }
    };
 
-   //template<typename TData>
-   //private ref class SpectralAnalyzerWrapper;
-
-   //template <>
-   //private ref class SpectralAnalyzerWrapper
+   template <>
+   private ref class SpectralAnalyzer<float> : public SpectralAnalyzerBase<float>, public ISpectralAnalysisSingle
+   {
+   internal:
+      SpectralAnalyzer(const Array<float>^ yValues, float timeStep)
+         : SpectralAnalyzerBase(yValues, timeStep)
+      { }
+   public:
+      // Inherited via ISpectralAnalysisSingle
+      virtual property Array<float>^ InstAmplitudes {
+         Array<float>^ get()
+         {
+            return m_pInstAmpl;
+         }
+      }
+      virtual property Array<float>^ InstPhases {
+         Array<float>^ get()
+         {
+            return m_pInstPhas;
+         }
+      }
+      virtual property Array<float>^ InstFrequencies {
+         Array<float>^ get()
+         {
+            return m_pInstFreq;
+         }
+      }
+   };
 
 #pragma endregion
 
