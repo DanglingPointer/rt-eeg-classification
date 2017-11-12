@@ -210,11 +210,11 @@ namespace Processing
          };
 
          if (m_length >= 100) {
-            concurrency::parallel_invoke(fillAmplTask, fillPhasFreqTask);
+            concurrency::parallel_invoke(fillPhasFreqTask, fillAmplTask);
          }
          else {
             fillAmplTask();
-            fillAmplTask();
+            fillPhasFreqTask();
          }
       }
 
@@ -258,6 +258,12 @@ namespace Processing
          }
       }
    };
+
+   //template<typename TData>
+   //private ref class SpectralAnalyzerWrapper;
+
+   //template <>
+   //private ref class SpectralAnalyzerWrapper
 
 #pragma endregion
 
