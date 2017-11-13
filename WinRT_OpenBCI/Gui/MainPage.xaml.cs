@@ -26,7 +26,7 @@ namespace Gui
         public MainPage()
         {
             this.InitializeComponent();
-            DataContext = new MainPageViewModel(yAxis);
+            DataContext = new MainPageViewModel();
         }
     }
 }

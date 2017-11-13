@@ -32,7 +32,7 @@ namespace Gui
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-            ApplicationView.PreferredLaunchViewSize = new Size(1000, 500);
+            ApplicationView.PreferredLaunchViewSize = new Size(1000, 1000);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
         }
 

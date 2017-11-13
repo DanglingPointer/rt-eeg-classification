@@ -5,8 +5,8 @@
     xmlns:local="using:Gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ctk="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
-        xmlns:c="using:WinRTXamlToolkit.Controls.DataVisualization"
+    xmlns:ctk="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
+    xmlns:c="using:WinRTXamlToolkit.Controls.DataVisualization"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -34,31 +34,78 @@
 
     <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-        <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" Margin="10" RelativePanel.Above="myGrid"
-                   RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True" 
-                   BorderBrush="Black" BorderThickness="1">
-            <ctk:Chart.Palette>
-                <ctk:ResourceDictionaryCollection>
-                    <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
-                </ctk:ResourceDictionaryCollection>
-            </ctk:Chart.Palette>
-            <ctk:Chart.Axes>
-                <ctk:LinearAxis Name="yAxis" Orientation="Y" />
-            </ctk:Chart.Axes>
-            <ctk:LineSeries ItemsSource="{Binding DataSeries}" 
+        <Grid RelativePanel.Above="myGrid" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True" >
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" Margin="10" BorderBrush="Black" BorderThickness="1">
+                <ctk:Chart.Palette>
+                    <ctk:ResourceDictionaryCollection>
+                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
+                    </ctk:ResourceDictionaryCollection>
+                </ctk:Chart.Palette>
+                <ctk:Chart.Axes>
+                    <ctk:LinearAxis Name="yAxis" Orientation="Y" />
+                </ctk:Chart.Axes>
+                <ctk:LineSeries ItemsSource="{Binding DataSeries}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-        </ctk:Chart>
+            </ctk:Chart>
+
+            <ctk:Chart Title="Instantaneous amplitudes" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="1" Margin="10" BorderBrush="Black" BorderThickness="1">
+                <ctk:Chart.Palette>
+                    <ctk:ResourceDictionaryCollection>
+                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
+                    </ctk:ResourceDictionaryCollection>
+                </ctk:Chart.Palette>
+                <ctk:LineSeries ItemsSource="{Binding Amplitudes}" 
+                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
+                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
+            </ctk:Chart>
+            
+            <ctk:Chart Title="Instantaneous phases" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="2" Margin="10" BorderBrush="Black" BorderThickness="1">
+                <ctk:Chart.Palette>
+                    <ctk:ResourceDictionaryCollection>
+                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
+                    </ctk:ResourceDictionaryCollection>
+                </ctk:Chart.Palette>
+                <ctk:LineSeries ItemsSource="{Binding Phases}" 
+                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
+                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
+            </ctk:Chart>
+
+            <ctk:Chart Title="Instantaneous frequencies" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="3" Margin="10" BorderBrush="Black" BorderThickness="1">
+                <ctk:Chart.Palette>
+                    <ctk:ResourceDictionaryCollection>
+                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
+                    </ctk:ResourceDictionaryCollection>
+                </ctk:Chart.Palette>
+                <ctk:LineSeries ItemsSource="{Binding Frequencies}" 
+                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
+                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
+            </ctk:Chart>
+
+        </Grid>
+
 
         <Grid Height="100" HorizontalAlignment="Stretch" Name="myGrid"
             RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Button Content="Previous chart" Command="{Binding OnPrevChartPressed}" Style="{StaticResource BtnBorderStyle}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" />
-            <Button Content="Next chart" Command="{Binding OnNextChartPressed}" Style="{StaticResource BtnBorderStyle}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1" />
+            <TextBlock Text="{Binding Status}" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            
+            <Button Content="Previous chart" Command="{Binding OnPrevChartPressed}" Style="{StaticResource BtnBorderStyle}" 
+                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0" />
+            <Button Content="Next chart" Command="{Binding OnNextChartPressed}" Style="{StaticResource BtnBorderStyle}" 
+                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="2" />
             
         </Grid>
         
