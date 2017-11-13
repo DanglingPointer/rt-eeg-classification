@@ -25,6 +25,8 @@ using namespace Platform;
  #define M_PI 3.14159265358979323846
 #endif
 
+//#define RECURSIVE_FFT
+
 namespace Processing
 {
 #pragma region Numerical Transforms
@@ -64,7 +66,11 @@ namespace Processing
          for (; i < *pResultLength; ++i) {
             input[i] = Cval(0.0, 0.0);
          }
+#ifdef RECURSIVE_FFT
+         return RecursiveForward(std::move(input), *pResultLength); // or RecursiveForward()
+#else
          return IterativeForward(std::move(input), *pResultLength); // or RecursiveForward()
+#endif
       }
       // Method 4 from here: https://www.dsprelated.com/showarticle/800.php
       // Length must be a power of 2
@@ -73,7 +79,11 @@ namespace Processing
          for (int i = 0; i < length; ++i) {
             data[i].imag(-1 * data[i].imag());
          }
-         data = IterativeForward(std::move(data), length); // or RecursiveForward()
+#ifdef RECURSIVE_FFT
+         data = RecursiveForward(std::move(data), length); // or RecursiveForward()
+#else
+         data = IterativeForward(std::move(data), length);
+#endif
          for (int i = 0; i < length; ++i) {
             data[i].imag(-1 * data[i].imag());
             data[i] /= (Val)length;
@@ -111,51 +121,51 @@ namespace Processing
          }
          return std::move(A);
       }
-      //// "Introduction To Algorithms", p.911
-      //// n must be a power of 2
-      //static CvalArr RecursiveForward(CvalArr a, int n)
-      //{
-      //   if (n == 1) {
-      //      return std::move(a);
-      //   }
-      //   const Cval i(0, 1);
-      //   const Cval wn = std::exp(2 * (Val)M_PI * i / (Val)n);
-      //
-      //   CvalArr aEven = std::make_unique<Cval[]>(n / 2);    
-      //   CvalArr aOdd = std::make_unique<Cval[]>(n / 2);
-      //
-      //   auto evenTask = [&aEven, &a, n]() {
-      //      int index = 0;
-      //      for (int i = 0; i <= n - 2; i += 2) {
-      //         aEven[index++] = a[i];
-      //      }
-      //      aEven = RecursiveForward(std::move(aEven), index);
-      //   };
-      //   auto oddTask = [&aOdd, &a, n]() {
-      //      int index = 0;
-      //      for (int i = 1; i <= n - 1; i += 2) {
-      //         aOdd[index++] = a[i];
-      //      }
-      //      aOdd = RecursiveForward(std::move(aOdd), index);
-      //   };
-      //   if (n > 64) {
-      //      concurrency::parallel_invoke(evenTask, oddTask);
-      //   }
-      //   else {
-      //      evenTask();
-      //      oddTask();
-      //   }
-      //
-      //   int halfN = n / 2;
-      //   Cval w(1, 0);
-      //   for (int k = 0; k < halfN; ++k) {
-      //      Cval t = w * aOdd[k];
-      //      a[k] = aEven[k] + t;
-      //      a[k + halfN] = aEven[k] - t;
-      //      w *= wn;
-      //   }
-      //   return std::move(a);
-      //}
+      // "Introduction To Algorithms", p.911
+      // n must be a power of 2
+      static CvalArr RecursiveForward(CvalArr a, int n)
+      {
+         if (n == 1) {
+            return std::move(a);
+         }
+         const Cval i(0, 1);
+         const Cval wn = std::exp(2 * (Val)M_PI * i / (Val)n);
+      
+         CvalArr aEven = std::make_unique<Cval[]>(n / 2);    
+         CvalArr aOdd = std::make_unique<Cval[]>(n / 2);
+      
+         auto evenTask = [&aEven, &a, n]() {
+            int index = 0;
+            for (int i = 0; i <= n - 2; i += 2) {
+               aEven[index++] = a[i];
+            }
+            aEven = RecursiveForward(std::move(aEven), index);
+         };
+         auto oddTask = [&aOdd, &a, n]() {
+            int index = 0;
+            for (int i = 1; i <= n - 1; i += 2) {
+               aOdd[index++] = a[i];
+            }
+            aOdd = RecursiveForward(std::move(aOdd), index);
+         };
+         if (n > 64) {
+            concurrency::parallel_invoke(evenTask, oddTask);
+         }
+         else {
+            evenTask();
+            oddTask();
+         }
+      
+         int halfN = n / 2;
+         Cval w(1, 0);
+         for (int k = 0; k < halfN; ++k) {
+            Cval t = w * aOdd[k];
+            a[k] = aEven[k] + t;
+            a[k + halfN] = aEven[k] - t;
+            w *= wn;
+         }
+         return std::move(a);
+      }
    };
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>

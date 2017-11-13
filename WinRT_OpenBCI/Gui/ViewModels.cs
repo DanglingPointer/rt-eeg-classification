@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
+using Windows.UI.Core;
 using WinRTXamlToolkit.Controls.DataVisualization.Charting;
 
 namespace Gui
@@ -48,7 +49,7 @@ namespace Gui
 
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        private const int DATA_LENGTH = 500;
+        private const int DATA_LENGTH = 1000;
         private IList<KeyValuePair<float, float>> _dataSeries;
         private String _chartName;
         private string _status;
@@ -66,11 +67,14 @@ namespace Gui
         private int _currentIndex;          // index of current decomposition on screen
         private volatile bool _busy;
 
+        private CoreDispatcher _dispatcher;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         
-        public MainPageViewModel()
+        public MainPageViewModel(CoreDispatcher dispatcher)
         {
+            _dispatcher = dispatcher;
             _chartName = "Original data";
 
             _busy = false;
@@ -120,7 +124,7 @@ namespace Gui
                     }
                     _onPrevChartPressed.ExecuteChanged(this, null);
                 }
-                var analysis = await GetAnalysis();
+                var analysis = Hsa.Analyse(_yData.ToArray(), 1.0f);
                 UpdateDataSeries(analysis);
                 OnPropertyChanged(nameof(ChartName));
             }, (o) => !_busy);
@@ -138,7 +142,7 @@ namespace Gui
                     _yData = _yOrigData;
                     _chartName = "Original data";
                 }
-                var analysis = await GetAnalysis();
+                var analysis = Hsa.Analyse(_yData.ToArray(), 1.0f);
                 UpdateDataSeries(analysis);
                 OnPropertyChanged(nameof(ChartName));
             }, (o) => !_busy && _decomposition != null && _currentIndex > -1);
@@ -178,51 +182,49 @@ namespace Gui
         }
         private void GenerateData()
         {
-            Random r = new Random();
+            Random r = new Random(42);
             for (int i = 1; i < DATA_LENGTH; ++i) {
                 _yOrigData[i] = _yOrigData[i - 1] + 1 * (float)(r.NextDouble() - 0.5);
                 _xData[i] = i;
             }
         }
-        private async Task<ISpectralAnalysisSingle> GetAnalysis()
-        {
-            Status = "Analyzing...";
-            SetBusy(true);
-            var analysis = await Hsa.AnalyseAsync(_yData.ToArray(), 1.0f);
-            SetBusy(false);
-            Status = null;
-            return analysis;
-        }
         /// <summary>
         /// Updates data to show with _yData and _xData
         /// </summary>
-        private void UpdateDataSeries(ISpectralAnalysisSingle analysis)
+        private async void UpdateDataSeries(ISpectralAnalysisSingle analysis)
         {
-            _dataSeries = new List<KeyValuePair<float, float>>();
-            for (int i = 0; i < DATA_LENGTH; ++i) {
-                _dataSeries.Add(new KeyValuePair<float, float>(_xData[i], _yData[i]));
-            }
-            OnPropertyChanged(nameof(DataSeries));
+            SetBusy(true);
+            Status = "Drawing the fcking charts...";
 
-            if (analysis != null) {
-                _amplitudes = new List<KeyValuePair<float, float>>();
-                for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
-                    _amplitudes.Add(new KeyValuePair<float, float>(i, analysis.InstAmplitudes[i]));
+            await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                _dataSeries = new List<KeyValuePair<float, float>>();
+                for (int i = 0; i < DATA_LENGTH; ++i) {
+                    _dataSeries.Add(new KeyValuePair<float, float>(_xData[i], _yData[i]));
                 }
-                OnPropertyChanged(nameof(Amplitudes));
+                //OnPropertyChanged(nameof(DataSeries));
 
-                _phases = new List<KeyValuePair<float, float>>();
-                for (int i = 0; i < analysis.InstPhases.Length; ++i) {
-                    _phases.Add(new KeyValuePair<float, float>(i, analysis.InstPhases[i]));
-                }
-                OnPropertyChanged(nameof(Phases));
+                if (analysis != null) {
+                    _amplitudes = new List<KeyValuePair<float, float>>();
+                    for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
+                        _amplitudes.Add(new KeyValuePair<float, float>(i, analysis.InstAmplitudes[i]));
+                    }
+                    //OnPropertyChanged(nameof(Amplitudes));
 
-                _frequencies = new List<KeyValuePair<float, float>>();
-                for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
-                    _frequencies.Add(new KeyValuePair<float, float>(i, analysis.InstFrequencies[i]));
+                    _phases = new List<KeyValuePair<float, float>>();
+                    for (int i = 0; i < analysis.InstPhases.Length; ++i) {
+                        _phases.Add(new KeyValuePair<float, float>(i, analysis.InstPhases[i]));
+                    }
+                    //OnPropertyChanged(nameof(Phases));
+
+                    _frequencies = new List<KeyValuePair<float, float>>();
+                    for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
+                        _frequencies.Add(new KeyValuePair<float, float>(i, analysis.InstFrequencies[i]));
+                    }
+                    //OnPropertyChanged(nameof(Frequencies));
                 }
-                OnPropertyChanged(nameof(Frequencies));
-            }
+            });
+            Status = null;
+            SetBusy(false);
         }
         private void SetBusy(bool busy)
         {
