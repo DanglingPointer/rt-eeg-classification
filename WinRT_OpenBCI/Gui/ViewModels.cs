@@ -1,4 +1,5 @@
-﻿using Processing;
+﻿using Communication;
+using Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -47,131 +48,56 @@ namespace Gui
         }
     }
 
-    public class MainPageViewModel : INotifyPropertyChanged
+    public class AnalysisPageViewModel : INotifyPropertyChanged
     {
-        private const int DATA_LENGTH = 1000;
-        private IList<KeyValuePair<float, float>> _dataSeries;
-        private String _chartName;
-        private string _status;
+        private IList<KeyValuePair<int, double>> _dataSeries;
+        private IList<KeyValuePair<int, double>> _amplitudes;
+        private IList<KeyValuePair<int, double>> _phases;
+        private IList<KeyValuePair<int, double>> _frequencies;
 
-        private IList<KeyValuePair<float, float>> _amplitudes;
-        private IList<KeyValuePair<float, float>> _phases;
-        private IList<KeyValuePair<float, float>> _frequencies;
-
-        RelayCommand _onNextChartPressed;
-        RelayCommand _onPrevChartPressed;
-
-        private IList<float> _xData, _yData;    // data to show
-        private IList<float> _yOrigData;        // original data range
-        private IImfDecompositionSingle _decomposition;
-        private int _currentIndex;          // index of current decomposition on screen
-        private volatile bool _busy;
-
+        private readonly int _channelIndex;
+        private int _chartIndex;
         private CoreDispatcher _dispatcher;
+        private double[] _channelData;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
         
-        public MainPageViewModel(CoreDispatcher dispatcher)
+        public AnalysisPageViewModel(CoreDispatcher dispatcher, int channelNo)
         {
+            _channelIndex = channelNo;
+            _chartIndex = -1;
             _dispatcher = dispatcher;
-            _chartName = "Original data";
+            _chartName = $"Channel {channelNo} data";
 
-            _busy = false;
-            _currentIndex = 0;
-            _decomposition = null;
+            BciData[] sampleData = DataManager.Current.Sample.ToArray();
 
-            _xData = new float[DATA_LENGTH];
-            _yOrigData = new float[DATA_LENGTH];
-
-            GenerateData();
-            _yData = _yOrigData;
-            
-            UpdateDataSeries(null);
-
-            _onNextChartPressed = new RelayCommand(async (o) => {
-                if (_decomposition == null) {
-                    _currentIndex = 0;
-
-                    Status = "Decomposing...";
-                    SetBusy(true);
-                    _decomposition = await Emd.EnsembleDecomposeAsync(_xData.ToArray(), _yOrigData.ToArray(), 1.0f);
-                    SetBusy(false);
-                    Status = null;
-
-                    _chartName = "Intrinsic mode function 0";
-                    _yData = _decomposition.ImfFunctions[_currentIndex];                    
-                }
-                else {
-                    _currentIndex++;
-                    if (_currentIndex < _decomposition.ImfFunctions.Count) {
-                        // show next imf
-                        _yData = _decomposition.ImfFunctions[_currentIndex];
-                        _chartName = $"Intrinsic mode function {_currentIndex}";
-                    }
-                    else if (_currentIndex == _decomposition.ImfFunctions.Count && _decomposition.ResidueFunction != null) {
-                        // show residue
-                        _yData = _decomposition.ResidueFunction;
-                        _chartName = "Residue";
-                    }
-                    else {
-                        // reset
-                        _decomposition = null;
-                        _currentIndex = 0;
-                        GenerateData();
-                        _yData = _yOrigData;
-                        _chartName = "Original data";
-                    }
-                    _onPrevChartPressed.ExecuteChanged(this, null);
-                }
-                var analysis = Hsa.Analyse(_yData.ToArray(), 1.0f);
-                UpdateDataSeries(analysis);
-                OnPropertyChanged(nameof(ChartName));
-            }, (o) => !_busy);
-
-            _onPrevChartPressed = new RelayCommand(async (o) => {
-                _currentIndex--;
-                _onPrevChartPressed.ExecuteChanged(this, null);
-                if (_currentIndex >= 0) {
-                    // show previous imf
-                    _yData = _decomposition.ImfFunctions[_currentIndex];
-                    _chartName = $"Intrinsic mode function {_currentIndex}";
-                }
-                else { // _currentIndex < 0
-                       // show original
-                    _yData = _yOrigData;
-                    _chartName = "Original data";
-                }
-                var analysis = Hsa.Analyse(_yData.ToArray(), 1.0f);
-                UpdateDataSeries(analysis);
-                OnPropertyChanged(nameof(ChartName));
-            }, (o) => !_busy && _decomposition != null && _currentIndex > -1);
+            _channelData = new double[sampleData.Length];
+            for (int i = 0; i < sampleData.Length; ++i) {
+                _channelData[i] = sampleData[i].ChannelData[_channelIndex];
+            }
         }
-        public IList<KeyValuePair<float, float>> DataSeries
+
+        public IList<KeyValuePair<int, double>> DataSeries
         { get => _dataSeries; }
-        public IList<KeyValuePair<float, float>> Amplitudes
+        public IList<KeyValuePair<int, double>> Amplitudes
         { get => _amplitudes; }
-        public IList<KeyValuePair<float, float>> Phases
+        public IList<KeyValuePair<int, double>> Phases
         { get => _phases; }
-        public IList<KeyValuePair<float, float>> Frequencies
+        public IList<KeyValuePair<int, double>> Frequencies
         { get => _frequencies; }
-        /// <summary>
-        /// Button handler
-        /// </summary>
-        public ICommand OnNextChartPressed
-        { get => _onNextChartPressed; }
-        /// <summary>
-        /// Button handler
-        /// </summary>
-        public ICommand OnPrevChartPressed
-        { get => _onPrevChartPressed; }
-        /// <summary>
-        /// Chart title
-        /// </summary>
+
+        private string _chartName;
         public string ChartName
         {
             get => _chartName;
+            set {
+                _chartName = value;
+                OnPropertyChanged(nameof(ChartName));
+            }
         }
+
+        private string _status;
         public string Status
         {
             get => _status;
@@ -180,62 +106,128 @@ namespace Gui
                 OnPropertyChanged(nameof(Status));
             }
         }
-        private void GenerateData()
+
+        public async void Initialize() // to be called in OnNavigatedTo
         {
-            Random r = new Random(42);
-            for (int i = 1; i < DATA_LENGTH; ++i) {
-                _yOrigData[i] = _yOrigData[i - 1] + 1 * (float)(r.NextDouble() - 0.5);
-                _xData[i] = i;
-            }
+            await UpdateDataSeries(_channelData);
         }
-        /// <summary>
-        /// Updates data to show with _yData and _xData
-        /// </summary>
-        private async void UpdateDataSeries(ISpectralAnalysisSingle analysis)
+        public async Task OnNextChartPressed()
+        {            
+            IImfDecompositionDouble decomp = DataManager.Current.Emds[_channelIndex];
+            if (decomp == null) {
+                Status = "Decomposing ...";
+
+                double[] xValues = new double[_channelData.Length];
+                for (int i = 0; i < _channelData.Length; ++i)
+                    xValues[i] = i;
+
+                decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 1.0, 50);
+                DataManager.Current.Emds[_channelIndex] = decomp;
+
+                Status = null;
+            }
+
+            if (_chartIndex == decomp.ImfFunctions.Count - 1 && decomp.ResidueFunction == null) // currently last imf and no residue
+                return;
+            if (_chartIndex == decomp.ImfFunctions.Count) // currently residue
+                return;
+
+            _chartIndex++;
+            double[] dataToShow;
+
+            if (_chartIndex < decomp.ImfFunctions.Count) {
+                dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
+                ChartName = $"IMF {_chartIndex}";
+            }
+            else {
+                dataToShow = decomp.ResidueFunction;
+                ChartName = "Residue";
+            }
+            await UpdateDataSeries(dataToShow);
+        }
+        public async Task OnPrevChartPressed()
         {
-            SetBusy(true);
+            if (_chartIndex == -1)
+                return;
+
+            IImfDecompositionDouble decomp = DataManager.Current.Emds[_channelIndex];
+            _chartIndex--;
+            double[] dataToShow;
+
+            if (_chartIndex > -1) {
+                dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
+                ChartName = $"IMF {_chartIndex}";
+            }
+            else {
+                dataToShow = _channelData;
+                _chartName = $"Channel {_channelIndex} data";
+            }
+            await UpdateDataSeries(dataToShow);
+        }
+        
+        private async Task UpdateDataSeries(double[] data)
+        {
             Status = "Drawing the fcking charts...";
+            var analysis = Hsa.Analyse(data, 1.0);
 
-            await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                _dataSeries = new List<KeyValuePair<float, float>>();
-                for (int i = 0; i < DATA_LENGTH; ++i) {
-                    _dataSeries.Add(new KeyValuePair<float, float>(_xData[i], _yData[i]));
+            await _dispatcher.RunAsync(CoreDispatcherPriority.Low, () => {
+
+                _dataSeries = new List<KeyValuePair<int, double>>();
+                for (int i = 0; i < data.Length; ++i) {
+                    _dataSeries.Add(new KeyValuePair<int, double>(i, data[i]));
                 }
-                //OnPropertyChanged(nameof(DataSeries));
+                OnPropertyChanged(nameof(DataSeries));
 
-                if (analysis != null) {
-                    _amplitudes = new List<KeyValuePair<float, float>>();
-                    for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
-                        _amplitudes.Add(new KeyValuePair<float, float>(i, analysis.InstAmplitudes[i]));
-                    }
-                    //OnPropertyChanged(nameof(Amplitudes));
-
-                    _phases = new List<KeyValuePair<float, float>>();
-                    for (int i = 0; i < analysis.InstPhases.Length; ++i) {
-                        _phases.Add(new KeyValuePair<float, float>(i, analysis.InstPhases[i]));
-                    }
-                    //OnPropertyChanged(nameof(Phases));
-
-                    _frequencies = new List<KeyValuePair<float, float>>();
-                    for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
-                        _frequencies.Add(new KeyValuePair<float, float>(i, analysis.InstFrequencies[i]));
-                    }
-                    //OnPropertyChanged(nameof(Frequencies));
+                _amplitudes = new List<KeyValuePair<int, double>>();
+                for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
+                    _amplitudes.Add(new KeyValuePair<int, double>(i, analysis.InstAmplitudes[i]));
                 }
+                OnPropertyChanged(nameof(Amplitudes));
+
+                _phases = new List<KeyValuePair<int, double>>();
+                for (int i = 0; i < analysis.InstPhases.Length; ++i) {
+                    _phases.Add(new KeyValuePair<int, double>(i, analysis.InstPhases[i]));
+                }
+                OnPropertyChanged(nameof(Phases));
+
+                _frequencies = new List<KeyValuePair<int, double>>();
+                for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
+                    _frequencies.Add(new KeyValuePair<int, double>(i, analysis.InstFrequencies[i]));
+                }
+                OnPropertyChanged(nameof(Frequencies));
             });
             Status = null;
-            SetBusy(false);
-        }
-        private void SetBusy(bool busy)
-        {
-            _busy = busy;
-            _onNextChartPressed?.ExecuteChanged(this, null);
-            _onPrevChartPressed?.ExecuteChanged(this, null);
         }
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    public class DataPageViewModel : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public DataPageViewModel()
+        {
+            BciData[] sampleCopy = DataManager.Current.Sample.ToArray();
+
+            // initialize ChannelData
+            ChannelData = new IList<KeyValuePair<int, double>>[8];
+            for (int channel = 0; channel < 8; ++channel) {
+                ChannelData[channel] = new KeyValuePair<int, double>[sampleCopy.Length];
+            }
+
+            // populate ChannelData
+            for (int sampleInd = 0; sampleInd < sampleCopy.Length; ++sampleInd) {
+                for (int chanInd = 0; chanInd < 8; ++chanInd) {
+                    IList<KeyValuePair<int, double>> channelList = ChannelData[chanInd];
+                    channelList[sampleInd] = new KeyValuePair<int, double>(sampleInd, sampleCopy[sampleInd].ChannelData[chanInd]);
+                }
+            }
+        }
+
+        public IList<KeyValuePair<int, double>>[] ChannelData { get; }
     }
 
 }

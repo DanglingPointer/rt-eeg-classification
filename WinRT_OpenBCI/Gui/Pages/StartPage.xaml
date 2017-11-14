@@ -1,0 +1,53 @@
+﻿<Page
+    x:Class="Gui.StartPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Gui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="10" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <!--Left column-->
+        <Button Name="btnConnect" Content="Connect" Grid.Column="0" Grid.Row="0" Click="Connect_OnClick"/>
+        <Button Name="btnStartStream" Content="Start Stream" Grid.Column="0" Grid.Row="1" Click="StartStream_OnClick" />
+        <Button Name="btntopStream" Content="Stop Stream" Grid.Column="0" Grid.Row="2" Click="StopStream_OnClick" />
+        <Button Name="btnReset" Content="Reset" Grid.Column="0" Grid.Row="3" Click="Reset_OnClick" />
+
+        <!--Mid column-->
+        <TextBlock Text="Info: " Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="10" />
+        <TextBox Name="txtInfo" Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" IsReadOnly="True" />
+
+        <!--Right column-->
+        <Button Name="btnStartSampling" Content="Start sampling" Grid.Column="2" Grid.Row="0" Click="StartSampling_OnClick" />
+        <Button Name="btnStopSampling" Content="Stop sampling" Grid.Column="2" Grid.Row="1" Click="StopSampling_OnClick" />
+        <StackPanel Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
+            <TextBlock Text="Sample count: " Margin="10" />
+            <TextBlock Name="txtSampleCount" Text="0" Margin="10" />
+        </StackPanel>
+        <Button Name="btnViewData" Content="View dampled data" Grid.Column="2" Grid.Row="3" Click="ViewData_OnClick" />
+
+
+    </Grid>
+</Page>
