@@ -37,16 +37,18 @@
 
         <!--Mid column-->
         <TextBlock Text="Info: " Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="10" />
-        <TextBox Name="txtInfo" Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" IsReadOnly="True" />
+        <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" VerticalScrollBarVisibility="Visible">
+            <TextBox Name="txtInfo"  IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
+        </ScrollViewer>
 
         <!--Right column-->
         <Button Name="btnStartSampling" Content="Start sampling" Grid.Column="2" Grid.Row="0" Click="StartSampling_OnClick" />
         <Button Name="btnStopSampling" Content="Stop sampling" Grid.Column="2" Grid.Row="1" Click="StopSampling_OnClick" />
         <StackPanel Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
             <TextBlock Text="Sample count: " Margin="10" />
-            <TextBlock Name="txtSampleCount" Text="0" Margin="10" />
+            <TextBlock Name="txtSampleCount" Text="" Margin="10" />
         </StackPanel>
-        <Button Name="btnViewData" Content="View dampled data" Grid.Column="2" Grid.Row="3" Click="ViewData_OnClick" />
+        <Button Name="btnViewData" Content="View sampled data" Grid.Column="2" Grid.Row="3" Click="ViewData_OnClick" />
 
 
     </Grid>

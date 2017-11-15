@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -14,12 +15,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace Gui
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Shows channel data and its IMFs, and corresponding Hilbert spectral analysis
     /// </summary>
     public sealed partial class AnalysisPage : Page
     {
@@ -27,16 +26,14 @@ namespace Gui
         {
             this.InitializeComponent();
         }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
         }
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
+            
             int? channelNo = e.Parameter as int?;
             if (channelNo != null) {
                 var viewModel = new AnalysisPageViewModel(Dispatcher, (int)channelNo);
@@ -52,15 +49,17 @@ namespace Gui
                 await vm.OnPrevChartPressed();
             }
         }
-
         private async void NextChart_OnClick(object sender, RoutedEventArgs e)
         {
             AnalysisPageViewModel vm = DataContext as AnalysisPageViewModel;
             if (vm != null) {
-                await vm.OnNextChartPressed();
+                await vm.OnNextChartPressed((enabled) => {
+                    btnNextChart.IsEnabled = enabled;
+                    btnPrevChart.IsEnabled = enabled;
+                    btnBack.IsEnabled = enabled;
+                });
             }
         }
-
         private void Back_OnClick(object sender, RoutedEventArgs e)
         {
             Frame.GoBack();

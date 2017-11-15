@@ -131,8 +131,10 @@ namespace Communication
         public static async Task<BciSerialAdapter> CreateAny()
         {
             var devices = await DeviceInformation.FindAllAsync();
+            if (devices.Count == 0) {
+                throw new InvalidOperationException("No serial devices found");
+            }
             var port = await SerialDevice.FromIdAsync(devices[0].Id);
-
             return new BciSerialAdapter(port);
         }
 
@@ -146,24 +148,24 @@ namespace Communication
         public void OpenPort()
         {
             if (_port == null)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Can't reopen a disposed serial port");
             _port.StartReceiving();
         }
         public void ClosePort()
         {
             if (_port == null)
-                throw new InvalidOperationException();
+                return;
             _port.DataReceived -= OnDataReceived;
             _port.Dispose();
             _port = null;
         }
-        public async Task SendCommand(BciCommand cmd)
+        public async Task SendCommandAsync(BciCommand cmd)
         {
             if (_port == null)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Serial port disposed");
             bool success = await _port.Send(cmd.CommandBytes);
             if (!success) {
-                throw new IOException();
+                throw new IOException("Command transmitting unsuccessfull");
             }
         }
         protected virtual void OnDataReceived(byte[] data)

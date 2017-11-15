@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
 using Windows.UI.Core;
+using Windows.UI.Popups;
 using WinRTXamlToolkit.Controls.DataVisualization.Charting;
 
 namespace Gui
@@ -111,11 +112,15 @@ namespace Gui
         {
             await UpdateDataSeries(_channelData);
         }
-        public async Task OnNextChartPressed()
-        {            
+        public async Task OnNextChartPressed(Action<bool> setButtonsEnabled)
+        {
+            if (_channelData.Length == 0) {
+                return;
+            }
             IImfDecompositionDouble decomp = DataManager.Current.Emds[_channelIndex];
             if (decomp == null) {
                 Status = "Decomposing ...";
+                setButtonsEnabled?.Invoke(false);
 
                 double[] xValues = new double[_channelData.Length];
                 for (int i = 0; i < _channelData.Length; ++i)
@@ -125,6 +130,7 @@ namespace Gui
                 DataManager.Current.Emds[_channelIndex] = decomp;
 
                 Status = null;
+                setButtonsEnabled?.Invoke(true);
             }
 
             if (_chartIndex == decomp.ImfFunctions.Count - 1 && decomp.ResidueFunction == null) // currently last imf and no residue
@@ -160,14 +166,19 @@ namespace Gui
             }
             else {
                 dataToShow = _channelData;
-                _chartName = $"Channel {_channelIndex} data";
+                ChartName = $"Channel {_channelIndex} data";
             }
             await UpdateDataSeries(dataToShow);
         }
         
         private async Task UpdateDataSeries(double[] data)
         {
-            Status = "Drawing the fcking charts...";
+            if (data.Length == 0) {
+                Status = "No data to show";
+                return;
+            }
+
+            Status = "Drawing the f***ing charts...";
             var analysis = Hsa.Analyse(data, 1.0);
 
             await _dispatcher.RunAsync(CoreDispatcherPriority.Low, () => {
@@ -204,6 +215,9 @@ namespace Gui
         }
     }
 
+    /// <summary>
+    /// Shows sampled data from all the 8 channels
+    /// </summary>
     public class DataPageViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

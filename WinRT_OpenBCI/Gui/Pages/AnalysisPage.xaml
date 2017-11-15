@@ -103,8 +103,8 @@
             </Grid.ColumnDefinitions>
 
             
-            <Button Content="Previous chart" Grid.Column="0" Click="PrevChart_OnClick"  />
-            <Button Content="Next chart" Grid.Column="2" Click="NextChart_OnClick" />
+            <Button Name="btnPrevChart" Content="Previous chart" Grid.Column="0" Click="PrevChart_OnClick"  />
+            <Button Name="btnNextChart" Content="Next chart" Grid.Column="2" Click="NextChart_OnClick" />
 
             <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
@@ -112,7 +112,7 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
 
-                <Button Content="Back" Grid.Row="1" Width="100" Click="Back_OnClick" />
+                <Button Name="btnBack" Content="Back" Grid.Row="1" Width="100" Click="Back_OnClick" />
                 <TextBlock Text="{Binding Status}" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
 
