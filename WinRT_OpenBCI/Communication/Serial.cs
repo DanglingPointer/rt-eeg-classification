@@ -14,6 +14,7 @@
 //   limitations under the License.
 //
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -130,7 +131,8 @@ namespace Communication
 
         public static async Task<BciSerialAdapter> CreateAny()
         {
-            var devices = await DeviceInformation.FindAllAsync();
+            var deviceSelector = SerialDevice.GetDeviceSelector();
+            var devices = await DeviceInformation.FindAllAsync(deviceSelector);
             if (devices.Count == 0) {
                 throw new InvalidOperationException("No serial devices found");
             }

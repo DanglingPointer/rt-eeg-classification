@@ -32,8 +32,8 @@ namespace Gui
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            DataContext = new DataPageViewModel();
             base.OnNavigatedTo(e);
+            DataContext = new DataPageViewModel();
         }
 
         private void Analyse_OnClick(object sender, RoutedEventArgs e)

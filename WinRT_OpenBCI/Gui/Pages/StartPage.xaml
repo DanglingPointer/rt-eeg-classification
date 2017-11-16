@@ -38,7 +38,7 @@
         <!--Mid column-->
         <TextBlock Text="Info: " Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="10" />
         <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" VerticalScrollBarVisibility="Visible">
-            <TextBox Name="txtInfo"  IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
+            <TextBox Name="txtInfo" TextWrapping="Wrap" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
         </ScrollViewer>
 
         <!--Right column-->
