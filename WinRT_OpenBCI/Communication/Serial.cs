@@ -34,6 +34,7 @@ namespace Communication
         private readonly SerialDevice _port;
         private CancellationTokenSource _closeTokenSrc;
         private readonly Object _mutex;
+        private volatile bool _disposing;
 
         public event Action<byte[]> DataReceived;
 
@@ -44,6 +45,7 @@ namespace Communication
 
             _mutex = new object();
             _closeTokenSrc = null;
+            _disposing = false;
         }
         public async void StartReceiving()
         {
@@ -73,7 +75,7 @@ namespace Communication
                 }
             }
             catch (OperationCanceledException) {
-                // port stopped/closed
+                if (_disposing) FreeResources();
             }
             finally {
                 reader?.DetachStream();
@@ -106,6 +108,7 @@ namespace Communication
                 return bytesWritten == data.Length;
             }
             catch (OperationCanceledException) {
+                if (_disposing) FreeResources();
                 return false;
             }
             finally {
@@ -115,9 +118,15 @@ namespace Communication
         }
         public void Dispose()
         {
+            _disposing = true;
             Stop();
-            _closeTokenSrc.Dispose();
-            _port.Dispose();
+        }
+        private void FreeResources()
+        {
+            lock (_mutex) {
+                _closeTokenSrc.Dispose();
+                _port.Dispose();
+            }
         }
     }
 
@@ -151,7 +160,7 @@ namespace Communication
         {
             if (_port == null)
                 throw new InvalidOperationException("Can't reopen a disposed serial port");
-            Task.Run(() => _port.StartReceiving());
+            _port.StartReceiving();
         }
         public void ClosePort()
         {

@@ -114,6 +114,33 @@
                     </lvc:CartesianChart.AxisX>
                 </lvc:CartesianChart>
 
+                <lvc:CartesianChart Series="{Binding ChannelData[1]}" LegendLocation="Right" Grid.Row="1" >
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisY>
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+
+                <lvc:CartesianChart Series="{Binding ChannelData[2]}" LegendLocation="Right" Grid.Row="2" >
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisY>
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+
+                <lvc:CartesianChart Series="{Binding ChannelData[3]}" LegendLocation="Right" Grid.Row="3" >
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisY>
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+
                 <!--<ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
                     <ctk:LineSeries ItemsSource="{Binding ChannelData[0]}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 

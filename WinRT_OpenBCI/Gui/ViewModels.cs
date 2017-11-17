@@ -231,9 +231,7 @@ namespace Gui
         {
             LabelFormatter = (value) => value.ToString();
             ChannelData = new SeriesCollection[8];
-        }
-        public void Initialize()
-        {
+
             BciData[] sampleCopy = DataManager.Current.Sample.ToArray();
 
             for (int channel = 0; channel < 8; ++channel) {
@@ -250,16 +248,18 @@ namespace Gui
                         Title = null,
                         Values = ydata,
                         PointGeometry = DefaultGeometries.None,
-                        StrokeThickness = 1.0
+                        StrokeThickness = 0.5
                     }
                 };
             }
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ChannelData)));
-
         }
-
+        /// <summary>
+        /// Data binded to the charts
+        /// </summary>
         public SeriesCollection[] ChannelData { get; }
-
+        /// <summary>
+        /// Axes labels formatter binded to the charts
+        /// </summary>
         public Func<double, string> LabelFormatter { get; }
     }
 

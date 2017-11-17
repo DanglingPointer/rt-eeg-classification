@@ -24,7 +24,6 @@ namespace Gui
         public DataPage()
         {
             this.InitializeComponent();
-            DataContext = new DataPageViewModel();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -32,15 +31,10 @@ namespace Gui
             base.OnNavigatedFrom(e);
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                var vm = DataContext as DataPageViewModel;
-                if (vm != null) {
-                    vm.Initialize();
-                }
-            });
+            DataContext = new DataPageViewModel();
         }
 
         private void Analyse_OnClick(object sender, RoutedEventArgs e)
