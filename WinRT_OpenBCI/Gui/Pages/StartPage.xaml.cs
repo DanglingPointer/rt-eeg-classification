@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -35,8 +36,8 @@ namespace Gui
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            _serial?.ClosePort();
-            _serial = null;
+            //_serial?.ClosePort();
+            //_serial = null;
             base.OnNavigatedFrom(e);
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -82,15 +83,19 @@ namespace Gui
                 }
                 _serial = await BciSerialAdapter.CreateAny();
 
-                _serial.BciDataReceived += (data) => {
-                    if (_sampleCounter != -1) {
-                        DataManager.Current.Sample.Enqueue(data);
-                        _sampleCounter++;
-                        txtSampleCount.Text = _sampleCounter.ToString();
-                    }
+                _serial.BciDataReceived += async (data) => {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                        if (_sampleCounter != -1) {
+                            DataManager.Current.Sample.Enqueue(data);
+                            _sampleCounter++;
+                            txtSampleCount.Text = _sampleCounter.ToString();
+                        }
+                    });
                 };
-                _serial.BciInfoReceived += (info) => {
-                    txtInfo.Text += $"{info}\n";
+                _serial.BciInfoReceived += async (info) => {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                        txtInfo.Text += $"{info}\n";
+                    });
                 };
                 _serial.OpenPort();
 
@@ -117,8 +122,8 @@ namespace Gui
         private void ViewData_OnClick(object sender, RoutedEventArgs e)
         {
             PopupIfThrows(() => {
-                if (DataManager.Current.Sample.Count == 0)
-                    throw new InvalidOperationException("No data sampled");
+                //if (DataManager.Current.Sample.Count == 0)
+                //    throw new InvalidOperationException("No data sampled");
                 Frame.Navigate(typeof(DataPage));
             });
         }

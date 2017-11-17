@@ -5,8 +5,7 @@
     xmlns:local="using:Gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ctk="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
-    xmlns:c="using:WinRTXamlToolkit.Controls.DataVisualization"
+    xmlns:lvc="using:LiveCharts.Uwp"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -21,22 +20,22 @@
             <Setter Property="Margin" Value="10" />
         </Style>
 
-        <Style x:Key="InvisibleRedDataPoint" TargetType="ctk:DataPoint">
+        <!--<Style x:Key="InvisibleRedDataPoint" TargetType="ctk:DataPoint">
             <Setter Property="Background" Value="Red"/>
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="Template" Value="{x:Null}"/>
-        </Style>
-        <Style x:Key="InvisibleLegend" TargetType="c:Legend" >
+        </Style>-->
+        <!--<Style x:Key="InvisibleLegend" TargetType="c:Legend" >
             <Setter Property="Width" Value="0"/>
-        </Style>
-        <Style x:Key="ThinPolyline" TargetType="Polyline" >
+        </Style>-->
+        <Style TargetType="Polyline" >
             <Setter Property="StrokeThickness" Value="1"/>
         </Style>
-        <Style TargetType="ctk:Chart">
+        <!--<Style TargetType="ctk:Chart">
             <Setter Property="Margin" Value="0" />
             <Setter Property="BorderBrush" Value="Black" />
             <Setter Property="BorderThickness" Value="1" />
-        </Style>
+        </Style>-->
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -106,7 +105,16 @@
                     <RowDefinition />-->
                 </Grid.RowDefinitions>
 
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
+                <lvc:CartesianChart Series="{Binding ChannelData[0]}" LegendLocation="Right" Grid.Row="0" >
+                    <lvc:CartesianChart.AxisY>
+                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisY>
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+
+                <!--<ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
                     <ctk:LineSeries ItemsSource="{Binding ChannelData[0]}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
@@ -123,26 +131,6 @@
                 </ctk:Chart>
                 <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="3">
                     <ctk:LineSeries ItemsSource="{Binding ChannelData[3]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <!--<ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="4">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[4]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="5">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[5]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="6">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[6]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="7">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[7]}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
                 </ctk:Chart>-->

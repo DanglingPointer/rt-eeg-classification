@@ -1,4 +1,6 @@
 ﻿using Communication;
+using LiveCharts;
+using LiveCharts.Uwp;
 using Processing;
 using System;
 using System.Collections.Generic;
@@ -12,7 +14,6 @@ using System.Windows.Input;
 using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Popups;
-using WinRTXamlToolkit.Controls.DataVisualization.Charting;
 
 namespace Gui
 {
@@ -228,24 +229,38 @@ namespace Gui
 
         public DataPageViewModel()
         {
+            LabelFormatter = (value) => value.ToString();
+            ChannelData = new SeriesCollection[8];
+        }
+        public void Initialize()
+        {
             BciData[] sampleCopy = DataManager.Current.Sample.ToArray();
 
-            // initialize ChannelData
-            ChannelData = new IList<KeyValuePair<int, double>>[8];
             for (int channel = 0; channel < 8; ++channel) {
-                ChannelData[channel] = new KeyValuePair<int, double>[sampleCopy.Length];
-            }
+                ChartValues<double> ydata = new ChartValues<double>();
 
-            // populate ChannelData
-            for (int sampleInd = 0; sampleInd < sampleCopy.Length; ++sampleInd) {
-                for (int chanInd = 0; chanInd < 8; ++chanInd) {
-                    IList<KeyValuePair<int, double>> channelList = ChannelData[chanInd];
-                    channelList[sampleInd] = new KeyValuePair<int, double>(sampleInd, sampleCopy[sampleInd].ChannelData[chanInd] * DataManager.ScaleFactor);
+                for (int sample = 0; sample < sampleCopy.Length; ++sample) {
+                    double value = sampleCopy[sample].ChannelData[channel] * DataManager.ScaleFactor;
+                    ydata.Add(value);
                 }
+                ChannelData[channel] = new SeriesCollection
+                {
+                    new LineSeries
+                    {
+                        Title = null,
+                        Values = ydata,
+                        PointGeometry = DefaultGeometries.None,
+                        StrokeThickness = 1.0
+                    }
+                };
             }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ChannelData)));
+
         }
 
-        public IList<KeyValuePair<int, double>>[] ChannelData { get; }
+        public SeriesCollection[] ChannelData { get; }
+
+        public Func<double, string> LabelFormatter { get; }
     }
 
 }

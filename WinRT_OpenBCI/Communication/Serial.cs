@@ -151,7 +151,7 @@ namespace Communication
         {
             if (_port == null)
                 throw new InvalidOperationException("Can't reopen a disposed serial port");
-            _port.StartReceiving();
+            Task.Run(() => _port.StartReceiving());
         }
         public void ClosePort()
         {

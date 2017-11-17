@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,6 +24,7 @@ namespace Gui
         public DataPage()
         {
             this.InitializeComponent();
+            DataContext = new DataPageViewModel();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -30,10 +32,15 @@ namespace Gui
             base.OnNavigatedFrom(e);
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            DataContext = new DataPageViewModel();
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                var vm = DataContext as DataPageViewModel;
+                if (vm != null) {
+                    vm.Initialize();
+                }
+            });
         }
 
         private void Analyse_OnClick(object sender, RoutedEventArgs e)
