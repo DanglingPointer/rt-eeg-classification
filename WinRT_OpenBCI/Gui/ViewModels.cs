@@ -69,13 +69,13 @@ namespace Gui
             _channelIndex = channelNo;
             _chartIndex = -1;
             _dispatcher = dispatcher;
-            _chartName = $"Channel {channelNo} data";
+            _chartName = $"Channel {channelNo + 1} data";
 
             BciData[] sampleData = DataManager.Current.Sample.ToArray();
 
             _channelData = new double[sampleData.Length];
             for (int i = 0; i < sampleData.Length; ++i) {
-                _channelData[i] = sampleData[i].ChannelData[_channelIndex];
+                _channelData[i] = sampleData[i].ChannelData[_channelIndex] * DataManager.ScaleFactor;
             }
         }
 
@@ -140,16 +140,18 @@ namespace Gui
 
             _chartIndex++;
             double[] dataToShow;
+            string chartName = null;
 
             if (_chartIndex < decomp.ImfFunctions.Count) {
                 dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
-                ChartName = $"IMF {_chartIndex}";
+                chartName = $"IMF {_chartIndex}";
             }
             else {
                 dataToShow = decomp.ResidueFunction;
-                ChartName = "Residue";
+                chartName = "Residue";
             }
             await UpdateDataSeries(dataToShow);
+            ChartName = chartName;
         }
         public async Task OnPrevChartPressed()
         {
@@ -159,16 +161,18 @@ namespace Gui
             IImfDecompositionDouble decomp = DataManager.Current.Emds[_channelIndex];
             _chartIndex--;
             double[] dataToShow;
+            string chartName = null;
 
             if (_chartIndex > -1) {
                 dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
-                ChartName = $"IMF {_chartIndex}";
+                chartName = $"IMF {_chartIndex}";
             }
             else {
                 dataToShow = _channelData;
-                ChartName = $"Channel {_channelIndex} data";
+                chartName = $"Channel {_channelIndex + 1} data";
             }
             await UpdateDataSeries(dataToShow);
+            ChartName = chartName;
         }
         
         private async Task UpdateDataSeries(double[] data)
@@ -178,10 +182,10 @@ namespace Gui
                 return;
             }
 
-            Status = "Drawing the f***ing charts...";
+            Status = "Drawing the charts...";
             var analysis = Hsa.Analyse(data, 1.0);
 
-            await _dispatcher.RunAsync(CoreDispatcherPriority.Low, () => {
+            await _dispatcher.RunAsync(CoreDispatcherPriority.High, () => {
 
                 _dataSeries = new List<KeyValuePair<int, double>>();
                 for (int i = 0; i < data.Length; ++i) {
@@ -236,7 +240,7 @@ namespace Gui
             for (int sampleInd = 0; sampleInd < sampleCopy.Length; ++sampleInd) {
                 for (int chanInd = 0; chanInd < 8; ++chanInd) {
                     IList<KeyValuePair<int, double>> channelList = ChannelData[chanInd];
-                    channelList[sampleInd] = new KeyValuePair<int, double>(sampleInd, sampleCopy[sampleInd].ChannelData[chanInd]);
+                    channelList[sampleInd] = new KeyValuePair<int, double>(sampleInd, sampleCopy[sampleInd].ChannelData[chanInd] * DataManager.ScaleFactor);
                 }
             }
         }

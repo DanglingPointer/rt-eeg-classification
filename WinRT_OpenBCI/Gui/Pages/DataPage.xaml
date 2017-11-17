@@ -33,7 +33,7 @@
             <Setter Property="StrokeThickness" Value="1"/>
         </Style>
         <Style TargetType="ctk:Chart">
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="BorderBrush" Value="Black" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
@@ -54,20 +54,20 @@
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
+                    <!--<RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition />-->
                 </Grid.RowDefinitions>
                 
                 <TextBlock Text="Channel 1" Grid.Row="0" />
                 <TextBlock Text="Channel 2" Grid.Row="1" />
                 <TextBlock Text="Channel 3" Grid.Row="2" />
                 <TextBlock Text="Channel 4" Grid.Row="3" />
-                <TextBlock Text="Channel 5" Grid.Row="4" />
+                <!--<TextBlock Text="Channel 5" Grid.Row="4" />
                 <TextBlock Text="Channel 6" Grid.Row="5" />
                 <TextBlock Text="Channel 7" Grid.Row="6" />
-                <TextBlock Text="Channel 8" Grid.Row="7" />
+                <TextBlock Text="Channel 8" Grid.Row="7" />-->
             </Grid>
 
             <!--Right column-->
@@ -77,20 +77,20 @@
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
+                    <!--<RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition />-->
                 </Grid.RowDefinitions>
 
                 <Button Name="btnAnalyse0" Content="Analyse" Grid.Row="0" Click="Analyse_OnClick"  />
                 <Button Name="btnAnalyse1" Content="Analyse" Grid.Row="1" Click="Analyse_OnClick"  />
                 <Button Name="btnAnalyse2" Content="Analyse" Grid.Row="2" Click="Analyse_OnClick"  />
                 <Button Name="btnAnalyse3" Content="Analyse" Grid.Row="3" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse4" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
+                <!--<Button Name="btnAnalyse4" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
                 <Button Name="btnAnalyse5" Content="Analyse" Grid.Row="5" Click="Analyse_OnClick"  />
                 <Button Name="btnAnalyse6" Content="Analyse" Grid.Row="6" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="7" Click="Analyse_OnClick"  />
+                <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="7" Click="Analyse_OnClick"  />-->
             </Grid>
 
             <!--Mid column-->
@@ -100,10 +100,10 @@
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
+                    <!--<RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition />-->
                 </Grid.RowDefinitions>
 
                 <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
@@ -126,7 +126,7 @@
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
                 </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="4">
+                <!--<ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="4">
                     <ctk:LineSeries ItemsSource="{Binding ChannelData[4]}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
@@ -145,7 +145,7 @@
                     <ctk:LineSeries ItemsSource="{Binding ChannelData[7]}" 
                             PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
                             DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
+                </ctk:Chart>-->
             </Grid>
 
         </RelativePanel>

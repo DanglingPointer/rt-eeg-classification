@@ -52,6 +52,7 @@ namespace Gui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.START_STREAM));
+                txtStatus.Text = "Streaming started";
             });
         }
         private async void StopStream_OnClick(object sender, RoutedEventArgs e)
@@ -60,6 +61,7 @@ namespace Gui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.STOP_STREAM));
+                txtStatus.Text = "Streaming stopped";
             });
         }
         private async void Reset_OnClick(object sender, RoutedEventArgs e)
@@ -68,6 +70,7 @@ namespace Gui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.RESET));
+                txtStatus.Text = "Device reset";
             });
         } 
 
@@ -89,8 +92,9 @@ namespace Gui
                 _serial.BciInfoReceived += (info) => {
                     txtInfo.Text += $"{info}\n";
                 };
-
                 _serial.OpenPort();
+
+                txtStatus.Text = "Serial port opened";
             });
         }
         private void StartSampling_OnClick(object sender, RoutedEventArgs e)

@@ -28,7 +28,7 @@
             <Setter Property="Margin" Value="10" />
         </Style>
         <Style TargetType="ctk:Chart">
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="BorderBrush" Value="Black" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>

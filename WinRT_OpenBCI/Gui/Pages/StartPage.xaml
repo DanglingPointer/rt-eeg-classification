@@ -36,6 +36,7 @@
         <Button Name="btnReset" Content="Reset" Grid.Column="0" Grid.Row="3" Click="Reset_OnClick" />
 
         <!--Mid column-->
+        <TextBlock Name="txtStatus" Grid.Column="1" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="10" />
         <TextBlock Text="Info: " Grid.Column="1" Grid.Row="0" VerticalAlignment="Bottom" Margin="10" />
         <ScrollViewer Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" VerticalScrollBarVisibility="Visible">
             <TextBox Name="txtInfo" TextWrapping="Wrap" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
