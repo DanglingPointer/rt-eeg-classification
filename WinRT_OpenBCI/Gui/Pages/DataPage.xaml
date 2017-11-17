@@ -16,26 +16,9 @@
         </Style>
         <Style TargetType="Button">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="10" />
         </Style>
-
-        <!--<Style x:Key="InvisibleRedDataPoint" TargetType="ctk:DataPoint">
-            <Setter Property="Background" Value="Red"/>
-            <Setter Property="Opacity" Value="0"/>
-            <Setter Property="Template" Value="{x:Null}"/>
-        </Style>-->
-        <!--<Style x:Key="InvisibleLegend" TargetType="c:Legend" >
-            <Setter Property="Width" Value="0"/>
-        </Style>-->
-        <Style TargetType="Polyline" >
-            <Setter Property="StrokeThickness" Value="1"/>
-        </Style>
-        <!--<Style TargetType="ctk:Chart">
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="BorderBrush" Value="Black" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>-->
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -44,126 +27,123 @@
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
 
-        <RelativePanel Grid.Row="0">
-            
-            <!--Left column-->
-            <Grid Name="leftGrid" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignTopWithPanel="True" Width="100">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <!--<RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />-->
-                </Grid.RowDefinitions>
-                
-                <TextBlock Text="Channel 1" Grid.Row="0" />
-                <TextBlock Text="Channel 2" Grid.Row="1" />
-                <TextBlock Text="Channel 3" Grid.Row="2" />
-                <TextBlock Text="Channel 4" Grid.Row="3" />
-                <!--<TextBlock Text="Channel 5" Grid.Row="4" />
-                <TextBlock Text="Channel 6" Grid.Row="5" />
-                <TextBlock Text="Channel 7" Grid.Row="6" />
-                <TextBlock Text="Channel 8" Grid.Row="7" />-->
-            </Grid>
 
-            <!--Right column-->
-            <Grid Name="rightGrid" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignTopWithPanel="True" Width="100">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <!--<RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />-->
-                </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Visible">
+            <RelativePanel MinHeight="2000">
 
-                <Button Name="btnAnalyse0" Content="Analyse" Grid.Row="0" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse1" Content="Analyse" Grid.Row="1" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse2" Content="Analyse" Grid.Row="2" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse3" Content="Analyse" Grid.Row="3" Click="Analyse_OnClick"  />
-                <!--<Button Name="btnAnalyse4" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse5" Content="Analyse" Grid.Row="5" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse6" Content="Analyse" Grid.Row="6" Click="Analyse_OnClick"  />
-                <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="7" Click="Analyse_OnClick"  />-->
-            </Grid>
+                <!--Right column-->
+                <Grid Name="rightGrid" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignTopWithPanel="True" Width="100">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-            <!--Mid column-->
-            <Grid RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignTopWithPanel="True" RelativePanel.LeftOf="rightGrid" RelativePanel.RightOf="leftGrid">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <!--<RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />-->
-                </Grid.RowDefinitions>
+                    <Button Name="btnAnalyse0" Content="Analyse" Grid.Row="0" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse1" Content="Analyse" Grid.Row="1" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse2" Content="Analyse" Grid.Row="2" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse3" Content="Analyse" Grid.Row="3" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse4" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse5" Content="Analyse" Grid.Row="5" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse6" Content="Analyse" Grid.Row="6" Click="Analyse_OnClick"  />
+                    <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="7" Click="Analyse_OnClick"  />
+                </Grid>
 
-                <lvc:CartesianChart Series="{Binding ChannelData[0]}" LegendLocation="Right" Grid.Row="0" >
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisY>
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
+                <!--Left column-->
+                <Grid RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignTopWithPanel="True" RelativePanel.LeftOf="rightGrid" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                <lvc:CartesianChart Series="{Binding ChannelData[1]}" LegendLocation="Right" Grid.Row="1" >
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisY>
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
+                    <lvc:CartesianChart Series="{Binding ChannelData[0]}" ChartLegend="{x:Null}" Grid.Row="0" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[0]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
 
-                <lvc:CartesianChart Series="{Binding ChannelData[2]}" LegendLocation="Right" Grid.Row="2" >
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisY>
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
+                    <lvc:CartesianChart Series="{Binding ChannelData[1]}" ChartLegend="{x:Null}" Grid.Row="1" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[1]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
 
-                <lvc:CartesianChart Series="{Binding ChannelData[3]}" LegendLocation="Right" Grid.Row="3" >
-                    <lvc:CartesianChart.AxisY>
-                        <lvc:Axis Title="Channel 1" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisY>
-                    <lvc:CartesianChart.AxisX>
-                        <lvc:Axis Title="Time" LabelFormatter="{Binding LabelFormatter}" />
-                    </lvc:CartesianChart.AxisX>
-                </lvc:CartesianChart>
+                    <lvc:CartesianChart Series="{Binding ChannelData[2]}" ChartLegend="{x:Null}" Grid.Row="2" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[2]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
 
-                <!--<ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[0]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="1">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[1]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="2">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[2]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>
-                <ctk:Chart LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="3">
-                    <ctk:LineSeries ItemsSource="{Binding ChannelData[3]}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-                </ctk:Chart>-->
-            </Grid>
+                    <lvc:CartesianChart Series="{Binding ChannelData[3]}" ChartLegend="{x:Null}" Grid.Row="3" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[3]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
 
-        </RelativePanel>
+                    <lvc:CartesianChart Series="{Binding ChannelData[4]}" ChartLegend="{x:Null}" Grid.Row="4" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[4]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+
+                    <lvc:CartesianChart Series="{Binding ChannelData[5]}" ChartLegend="{x:Null}" Grid.Row="5" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[5]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+
+                    <lvc:CartesianChart Series="{Binding ChannelData[6]}" ChartLegend="{x:Null}" Grid.Row="6" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[6]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+
+                    <lvc:CartesianChart Series="{Binding ChannelData[7]}" ChartLegend="{x:Null}" Grid.Row="7" >
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis Title="{Binding ChartTitles[7]}" LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+
+
+                </Grid>
+
+            </RelativePanel>
+        </ScrollViewer>
 
         <Button Name="btnBack" Grid.Row="1" Click="Back_OnClick" Width="100" Content="Back" />
 

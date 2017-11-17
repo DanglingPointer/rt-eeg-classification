@@ -5,38 +5,20 @@
     xmlns:local="using:Gui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ctk="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
-    xmlns:c="using:WinRTXamlToolkit.Controls.DataVisualization"
+    xmlns:lvc="using:LiveCharts.Uwp"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <Style x:Key="InvisibleRedDataPoint" TargetType="ctk:DataPoint">
-            <Setter Property="Background" Value="Red"/>
-            <Setter Property="Opacity" Value="0"/>
-            <Setter Property="Template" Value="{x:Null}"/>
-        </Style>
-        <Style x:Key="InvisibleLegend" TargetType="c:Legend" >
-            <Setter Property="Width" Value="0"/>
-        </Style>
-        <Style x:Key="ThinPolyline" TargetType="Polyline" >
-            <Setter Property="StrokeThickness" Value="1"/>
-        </Style>
-
         <Style TargetType="Button">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="Margin" Value="10" />
         </Style>
-        <Style TargetType="ctk:Chart">
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="BorderBrush" Value="Black" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
     </Page.Resources>
 
     <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-        <Grid RelativePanel.Above="myGrid" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True" >
+        <Grid RelativePanel.Above="myGrid" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -44,52 +26,41 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <ctk:Chart Title="{Binding ChartName}" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="0" >
-                <ctk:Chart.Palette>
-                    <ctk:ResourceDictionaryCollection>
-                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
-                    </ctk:ResourceDictionaryCollection>
-                </ctk:Chart.Palette>
-                <ctk:Chart.Axes>
-                    <ctk:LinearAxis Name="yAxis" Orientation="Y" />
-                </ctk:Chart.Axes>
-                <ctk:LineSeries ItemsSource="{Binding DataSeries}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-            </ctk:Chart>
+            <lvc:CartesianChart Series="{Binding DataSeries}" LegendLocation="Top" Grid.Row="0" >
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisY>
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisX>
+            </lvc:CartesianChart>
 
-            <ctk:Chart Title="Instantaneous amplitudes" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="1">
-                <ctk:Chart.Palette>
-                    <ctk:ResourceDictionaryCollection>
-                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
-                    </ctk:ResourceDictionaryCollection>
-                </ctk:Chart.Palette>
-                <ctk:LineSeries ItemsSource="{Binding Amplitudes}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-            </ctk:Chart>
-            
-            <ctk:Chart Title="Instantaneous phases" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="2" >
-                <ctk:Chart.Palette>
-                    <ctk:ResourceDictionaryCollection>
-                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
-                    </ctk:ResourceDictionaryCollection>
-                </ctk:Chart.Palette>
-                <ctk:LineSeries ItemsSource="{Binding Phases}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-            </ctk:Chart>
+            <lvc:CartesianChart Series="{Binding Amplitudes}" LegendLocation="Top" Grid.Row="1" >
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisY>
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisX>
+            </lvc:CartesianChart>
 
-            <ctk:Chart Title="Instantaneous frequencies" LegendStyle="{StaticResource InvisibleLegend}" Grid.Row="3" >
-                <ctk:Chart.Palette>
-                    <ctk:ResourceDictionaryCollection>
-                        <!--This hack should prevent a memory leak. Unfortunately it doesn't.-->
-                    </ctk:ResourceDictionaryCollection>
-                </ctk:Chart.Palette>
-                <ctk:LineSeries ItemsSource="{Binding Frequencies}" 
-                            PolylineStyle="{StaticResource ThinPolyline}" DataPointStyle="{StaticResource InvisibleRedDataPoint}" 
-                            DependentValuePath="Value" IndependentValuePath="Key" IsSelectionEnabled="True"/>
-            </ctk:Chart>
+            <lvc:CartesianChart Series="{Binding Phases}" LegendLocation="Top" Grid.Row="2" >
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisY>
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisX>
+            </lvc:CartesianChart>
+
+            <lvc:CartesianChart Series="{Binding Frequencies}" LegendLocation="Top" Grid.Row="3" >
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisY>
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                </lvc:CartesianChart.AxisX>
+            </lvc:CartesianChart>
 
         </Grid>
 

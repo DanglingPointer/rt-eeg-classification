@@ -36,17 +36,17 @@ namespace Gui
             
             int? channelNo = e.Parameter as int?;
             if (channelNo != null) {
-                var viewModel = new AnalysisPageViewModel(Dispatcher, (int)channelNo);
+                var viewModel = new AnalysisPageViewModel((int)channelNo);
                 DataContext = viewModel;
                 viewModel.Initialize();
             }
         }
 
-        private async void PrevChart_OnClick(object sender, RoutedEventArgs e)
+        private void PrevChart_OnClick(object sender, RoutedEventArgs e)
         {
             AnalysisPageViewModel vm = DataContext as AnalysisPageViewModel;
             if (vm != null) {
-                await vm.OnPrevChartPressed();
+                vm.OnPrevChartPressed();
             }
         }
         private async void NextChart_OnClick(object sender, RoutedEventArgs e)

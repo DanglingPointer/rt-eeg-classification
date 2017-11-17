@@ -12,8 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Popups;
+using Windows.UI.Xaml.Media;
 
 namespace Gui
 {
@@ -52,24 +54,23 @@ namespace Gui
 
     public class AnalysisPageViewModel : INotifyPropertyChanged
     {
-        private IList<KeyValuePair<int, double>> _dataSeries;
-        private IList<KeyValuePair<int, double>> _amplitudes;
-        private IList<KeyValuePair<int, double>> _phases;
-        private IList<KeyValuePair<int, double>> _frequencies;
+        private SeriesCollection _dataSeries;
+        private SeriesCollection _amplitudes;
+        private SeriesCollection _phases;
+        private SeriesCollection _frequencies;
 
         private readonly int _channelIndex;
         private int _chartIndex;
-        private CoreDispatcher _dispatcher;
+        private string _chartName;
         private double[] _channelData;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
         
-        public AnalysisPageViewModel(CoreDispatcher dispatcher, int channelNo)
+        public AnalysisPageViewModel(int channelNo)
         {
             _channelIndex = channelNo;
             _chartIndex = -1;
-            _dispatcher = dispatcher;
             _chartName = $"Channel {channelNo + 1} data";
 
             BciData[] sampleData = DataManager.Current.Sample.ToArray();
@@ -80,24 +81,15 @@ namespace Gui
             }
         }
 
-        public IList<KeyValuePair<int, double>> DataSeries
+        public SeriesCollection DataSeries
         { get => _dataSeries; }
-        public IList<KeyValuePair<int, double>> Amplitudes
+        public SeriesCollection Amplitudes
         { get => _amplitudes; }
-        public IList<KeyValuePair<int, double>> Phases
+        public SeriesCollection Phases
         { get => _phases; }
-        public IList<KeyValuePair<int, double>> Frequencies
+        public SeriesCollection Frequencies
         { get => _frequencies; }
 
-        private string _chartName;
-        public string ChartName
-        {
-            get => _chartName;
-            set {
-                _chartName = value;
-                OnPropertyChanged(nameof(ChartName));
-            }
-        }
 
         private string _status;
         public string Status
@@ -109,9 +101,16 @@ namespace Gui
             }
         }
 
-        public async void Initialize() // to be called in OnNavigatedTo
+        public Func<double, string> LabelFormatter
         {
-            await UpdateDataSeries(_channelData);
+            get {
+                return (value) => value.ToString("F");
+            }
+        }
+
+        public void Initialize() // to be called in OnNavigatedTo
+        {
+            UpdateDataSeries(_channelData);
         }
         public async Task OnNextChartPressed(Action<bool> setButtonsEnabled)
         {
@@ -141,20 +140,18 @@ namespace Gui
 
             _chartIndex++;
             double[] dataToShow;
-            string chartName = null;
 
             if (_chartIndex < decomp.ImfFunctions.Count) {
                 dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
-                chartName = $"IMF {_chartIndex}";
+                _chartName = $"IMF {_chartIndex}";
             }
             else {
                 dataToShow = decomp.ResidueFunction;
-                chartName = "Residue";
+                _chartName = "Residue";
             }
-            await UpdateDataSeries(dataToShow);
-            ChartName = chartName;
+            UpdateDataSeries(dataToShow);
         }
-        public async Task OnPrevChartPressed()
+        public void OnPrevChartPressed()
         {
             if (_chartIndex == -1)
                 return;
@@ -162,57 +159,85 @@ namespace Gui
             IImfDecompositionDouble decomp = DataManager.Current.Emds[_channelIndex];
             _chartIndex--;
             double[] dataToShow;
-            string chartName = null;
 
             if (_chartIndex > -1) {
                 dataToShow = decomp.ImfFunctions[_chartIndex].ToArray();
-                chartName = $"IMF {_chartIndex}";
+                _chartName = $"IMF {_chartIndex}";
             }
             else {
                 dataToShow = _channelData;
-                chartName = $"Channel {_channelIndex + 1} data";
+                _chartName = $"Channel {_channelIndex + 1} data";
             }
-            await UpdateDataSeries(dataToShow);
-            ChartName = chartName;
+            UpdateDataSeries(dataToShow);
         }
         
-        private async Task UpdateDataSeries(double[] data)
+        private void UpdateDataSeries(double[] data)
         {
             if (data.Length == 0) {
                 Status = "No data to show";
                 return;
             }
-
-            Status = "Drawing the charts...";
             var analysis = Hsa.Analyse(data, 1.0);
 
-            await _dispatcher.RunAsync(CoreDispatcherPriority.High, () => {
-
-                _dataSeries = new List<KeyValuePair<int, double>>();
-                for (int i = 0; i < data.Length; ++i) {
-                    _dataSeries.Add(new KeyValuePair<int, double>(i, data[i]));
+            var dataValues = new ChartValues<double>();
+            for (int i = 0; i < data.Length; ++i) {
+                dataValues.Add(data[i]);
+            }
+            _dataSeries = new SeriesCollection {
+                new LineSeries {
+                    Title = _chartName,
+                    Values = dataValues,
+                    PointGeometry = DefaultGeometries.None,
+                    StrokeThickness = 0.5,
+                    Stroke = new SolidColorBrush(Colors.Red)
                 }
-                OnPropertyChanged(nameof(DataSeries));
+            };
+            OnPropertyChanged(nameof(DataSeries));
 
-                _amplitudes = new List<KeyValuePair<int, double>>();
-                for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
-                    _amplitudes.Add(new KeyValuePair<int, double>(i, analysis.InstAmplitudes[i]));
+            var ampValues = new ChartValues<double>();
+            for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
+                ampValues.Add(analysis.InstAmplitudes[i]);
+            }
+            _amplitudes = new SeriesCollection {
+                new LineSeries {
+                    Title = "Instantaneous amplitudes",
+                    Values = ampValues,
+                    PointGeometry = DefaultGeometries.None,
+                    StrokeThickness = 0.5,
+                    Stroke = new SolidColorBrush(Colors.Red)
                 }
-                OnPropertyChanged(nameof(Amplitudes));
+            };
+            OnPropertyChanged(nameof(Amplitudes));
 
-                _phases = new List<KeyValuePair<int, double>>();
-                for (int i = 0; i < analysis.InstPhases.Length; ++i) {
-                    _phases.Add(new KeyValuePair<int, double>(i, analysis.InstPhases[i]));
+            var phasValues = new ChartValues<double>();
+            for (int i = 0; i < analysis.InstPhases.Length; ++i) {
+                phasValues.Add(analysis.InstPhases[i]);
+            }
+            _phases = new SeriesCollection {
+                new LineSeries {
+                    Title = "Instantaneous phases",
+                    Values = phasValues,
+                    PointGeometry = DefaultGeometries.None,
+                    StrokeThickness = 0.5,
+                    Stroke = new SolidColorBrush(Colors.Red)
                 }
-                OnPropertyChanged(nameof(Phases));
+            };
+            OnPropertyChanged(nameof(Phases));
 
-                _frequencies = new List<KeyValuePair<int, double>>();
-                for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
-                    _frequencies.Add(new KeyValuePair<int, double>(i, analysis.InstFrequencies[i]));
+            var freqValues = new ChartValues<double>();
+            for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
+                freqValues.Add(analysis.InstFrequencies[i]);
+            }
+            _frequencies = new SeriesCollection {
+                new LineSeries {
+                    Title = "Instantaneous frequencies",
+                    Values = freqValues,
+                    PointGeometry = DefaultGeometries.None,
+                    StrokeThickness = 0.5,
+                    Stroke = new SolidColorBrush(Colors.Red)
                 }
-                OnPropertyChanged(nameof(Frequencies));
-            });
-            Status = null;
+            };
+            OnPropertyChanged(nameof(Frequencies));
         }
         private void OnPropertyChanged(string propertyName)
         {
@@ -229,8 +254,9 @@ namespace Gui
 
         public DataPageViewModel()
         {
-            LabelFormatter = (value) => value.ToString();
+            LabelFormatter = (value) => value.ToString("F");
             ChannelData = new SeriesCollection[8];
+            ChartTitles = new string[8];
 
             BciData[] sampleCopy = DataManager.Current.Sample.ToArray();
 
@@ -241,18 +267,19 @@ namespace Gui
                     double value = sampleCopy[sample].ChannelData[channel] * DataManager.ScaleFactor;
                     ydata.Add(value);
                 }
-                ChannelData[channel] = new SeriesCollection
-                {
-                    new LineSeries
-                    {
+                ChannelData[channel] = new SeriesCollection {
+                    new LineSeries {
                         Title = null,
                         Values = ydata,
                         PointGeometry = DefaultGeometries.None,
-                        StrokeThickness = 0.5
+                        StrokeThickness = 0.5,
+                        Stroke = new SolidColorBrush(Colors.Red)
                     }
                 };
+                ChartTitles[channel] = $"Channel {channel + 1}";
             }
         }
+        public string[] ChartTitles { get; }
         /// <summary>
         /// Data binded to the charts
         /// </summary>

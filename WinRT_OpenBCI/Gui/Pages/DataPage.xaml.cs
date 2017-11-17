@@ -55,18 +55,18 @@ namespace Gui
                 else if (btn == btnAnalyse3) {
                     channelIndex = 3;
                 }
-                //else if (btn == btnAnalyse4) {
-                //    channelIndex = 4;
-                //}
-                //else if (btn == btnAnalyse5) {
-                //    channelIndex = 5;
-                //}
-                //else if (btn == btnAnalyse6) {
-                //    channelIndex = 6;
-                //}
-                //else if (btn == btnAnalyse7) {
-                //    channelIndex = 7;
-                //}
+                else if (btn == btnAnalyse4) {
+                    channelIndex = 4;
+                }
+                else if (btn == btnAnalyse5) {
+                    channelIndex = 5;
+                }
+                else if (btn == btnAnalyse6) {
+                    channelIndex = 6;
+                }
+                else if (btn == btnAnalyse7) {
+                    channelIndex = 7;
+                }
 
                 if (channelIndex != null) {
                     Frame.Navigate(typeof(AnalysisPage), channelIndex);
