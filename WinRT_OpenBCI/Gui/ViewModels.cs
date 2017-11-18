@@ -101,10 +101,16 @@ namespace Gui
             }
         }
 
-        public Func<double, string> LabelFormatter
+        public Func<double, string> YLabelFormatter
         {
             get {
                 return (value) => value.ToString("F");
+            }
+        }
+        public Func<double, string> XLabelFormatter
+        {
+            get {
+                return (value) => ((int)(value * 2)).ToString();
             }
         }
 
@@ -180,7 +186,7 @@ namespace Gui
             var analysis = Hsa.Analyse(data, 1.0);
 
             var dataValues = new ChartValues<double>();
-            for (int i = 0; i < data.Length; ++i) {
+            for (int i = 0; i < data.Length; i += 2) {
                 dataValues.Add(data[i]);
             }
             _dataSeries = new SeriesCollection {
@@ -195,7 +201,7 @@ namespace Gui
             OnPropertyChanged(nameof(DataSeries));
 
             var ampValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstAmplitudes.Length; ++i) {
+            for (int i = 0; i < analysis.InstAmplitudes.Length; i += 2) {
                 ampValues.Add(analysis.InstAmplitudes[i]);
             }
             _amplitudes = new SeriesCollection {
@@ -210,7 +216,7 @@ namespace Gui
             OnPropertyChanged(nameof(Amplitudes));
 
             var phasValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstPhases.Length; ++i) {
+            for (int i = 0; i < analysis.InstPhases.Length; i += 2) {
                 phasValues.Add(analysis.InstPhases[i]);
             }
             _phases = new SeriesCollection {
@@ -225,7 +231,7 @@ namespace Gui
             OnPropertyChanged(nameof(Phases));
 
             var freqValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstFrequencies.Length; ++i) {
+            for (int i = 0; i < analysis.InstFrequencies.Length; i += 2) {
                 freqValues.Add(analysis.InstFrequencies[i]);
             }
             _frequencies = new SeriesCollection {
@@ -254,7 +260,6 @@ namespace Gui
 
         public DataPageViewModel()
         {
-            LabelFormatter = (value) => value.ToString("F");
             ChannelData = new SeriesCollection[8];
             ChartTitles = new string[8];
 
@@ -263,7 +268,7 @@ namespace Gui
             for (int channel = 0; channel < 8; ++channel) {
                 ChartValues<double> ydata = new ChartValues<double>();
 
-                for (int sample = 0; sample < sampleCopy.Length; ++sample) {
+                for (int sample = 0; sample < sampleCopy.Length; sample += 2) {
                     double value = sampleCopy[sample].ChannelData[channel] * DataManager.ScaleFactor;
                     ydata.Add(value);
                 }
@@ -287,7 +292,18 @@ namespace Gui
         /// <summary>
         /// Axes labels formatter binded to the charts
         /// </summary>
-        public Func<double, string> LabelFormatter { get; }
+        public Func<double, string> YLabelFormatter
+        {
+            get {
+                return (value) => value.ToString("F");
+            }
+        }
+        public Func<double, string> XLabelFormatter
+        {
+            get {
+                return (value) => ((int)(value * 2)).ToString();
+            }
+        }
     }
 
 }

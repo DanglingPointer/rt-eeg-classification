@@ -366,15 +366,12 @@ namespace Processing
       }
       bool IsSiftingFinished() const
       {
-         TData sd = 0.0;
+         TData numerator = 0.0, denominator = 0.0;
          for (int i = 0; i < m_length; ++i) {
-            TData diff = m_pprevH[i] - m_pnewH[i];
-            TData nextSD = (diff*diff) / (m_pprevH[i] * m_pprevH[i]);
-            if (!std::isnan(nextSD)) {
-               sd += nextSD;
-            }
+            numerator += (m_pprevH[i] - m_pnewH[i]) * (m_pprevH[i] - m_pnewH[i]);
+            denominator += m_pprevH[i] * m_pprevH[i];
          }
-         return sd < 0.3;
+         return (numerator / denominator) < 0.1;
       }
    };
 

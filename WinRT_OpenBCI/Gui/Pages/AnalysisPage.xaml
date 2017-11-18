@@ -28,37 +28,37 @@
 
             <lvc:CartesianChart Series="{Binding DataSeries}" LegendLocation="Top" Grid.Row="0" >
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding YLabelFormatter}" />
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                 </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
 
             <lvc:CartesianChart Series="{Binding Amplitudes}" LegendLocation="Top" Grid.Row="1" >
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding YLabelFormatter}" />
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                 </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
 
             <lvc:CartesianChart Series="{Binding Phases}" LegendLocation="Top" Grid.Row="2" >
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding YLabelFormatter}" />
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                 </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
 
             <lvc:CartesianChart Series="{Binding Frequencies}" LegendLocation="Top" Grid.Row="3" >
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding YLabelFormatter}" />
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
-                    <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                    <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                 </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
 

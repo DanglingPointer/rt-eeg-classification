@@ -69,73 +69,73 @@
 
                     <lvc:CartesianChart Series="{Binding ChannelData[0]}" ChartLegend="{x:Null}" Grid.Row="0" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[0]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[0]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[1]}" ChartLegend="{x:Null}" Grid.Row="1" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[1]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[1]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[2]}" ChartLegend="{x:Null}" Grid.Row="2" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[2]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[2]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[3]}" ChartLegend="{x:Null}" Grid.Row="3" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[3]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[3]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[4]}" ChartLegend="{x:Null}" Grid.Row="4" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[4]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[4]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[5]}" ChartLegend="{x:Null}" Grid.Row="5" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[5]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[5]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[6]}" ChartLegend="{x:Null}" Grid.Row="6" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[6]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[6]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
                     <lvc:CartesianChart Series="{Binding ChannelData[7]}" ChartLegend="{x:Null}" Grid.Row="7" >
                         <lvc:CartesianChart.AxisY>
-                            <lvc:Axis Title="{Binding ChartTitles[7]}" LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis Title="{Binding ChartTitles[7]}" LabelFormatter="{Binding YLabelFormatter}" />
                         </lvc:CartesianChart.AxisY>
                         <lvc:CartesianChart.AxisX>
-                            <lvc:Axis LabelFormatter="{Binding LabelFormatter}" />
+                            <lvc:Axis LabelFormatter="{Binding XLabelFormatter}" />
                         </lvc:CartesianChart.AxisX>
                     </lvc:CartesianChart>
 
