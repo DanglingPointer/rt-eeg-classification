@@ -106,6 +106,7 @@
     <ClInclude Include="Analysis.h" />
     <ClInclude Include="Decomposition.h" />
     <ClInclude Include="Hsa.h" />
+    <ClInclude Include="IHilbertSpectrum.h" />
     <ClInclude Include="IImfDecomposition.h" />
     <ClInclude Include="ISpectralAnalysis.h" />
     <ClInclude Include="pch.h" />

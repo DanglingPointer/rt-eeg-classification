@@ -41,7 +41,12 @@ namespace Communication
         public SerialWrapper(SerialDevice device)
         {
             _port = device;
+            // Using 115200/8-N-1
             _port.BaudRate = 115200;
+            _port.DataBits = 8;
+            _port.Parity = SerialParity.None;
+            _port.StopBits = SerialStopBitCount.One;
+            _port.ReadTimeout = TimeSpan.FromSeconds(0.5);
 
             _mutex = new object();
             _closeTokenSrc = null;

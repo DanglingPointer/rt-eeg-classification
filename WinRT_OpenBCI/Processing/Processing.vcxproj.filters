@@ -19,5 +19,6 @@
     <ClInclude Include="ISpectralAnalysis.h" />
     <ClInclude Include="Hsa.h" />
     <ClInclude Include="Analysis.h" />
+    <ClInclude Include="IHilbertSpectrum.h" />
   </ItemGroup>
 </Project>

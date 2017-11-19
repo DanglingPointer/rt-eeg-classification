@@ -113,6 +113,12 @@ namespace Gui
                 return (value) => ((int)(value * 2)).ToString();
             }
         }
+        public Func<double, string> DataXLabelFormatter
+        {
+            get {
+                return (value) => value.ToString();
+            }
+        }
 
         public void Initialize() // to be called in OnNavigatedTo
         {
@@ -186,7 +192,7 @@ namespace Gui
             var analysis = Hsa.Analyse(data, 1.0);
 
             var dataValues = new ChartValues<double>();
-            for (int i = 0; i < data.Length; i += 2) {
+            for (int i = 0; i < data.Length; ++i) {
                 dataValues.Add(data[i]);
             }
             _dataSeries = new SeriesCollection {

@@ -311,9 +311,6 @@ namespace Processing
       }
    };
 
-   class ImfUnavailableException : public std::exception
-   { };
-
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    class Sifter
    {
@@ -336,18 +333,21 @@ namespace Processing
          }
          catch (const MonotonicFunctionException&) {
             m_isImfValid = false;
+            m_pnewH = nullptr;
+            m_pprevH = nullptr;
          }
       }
-
-      UPtr MoveImf()
+      bool IsImfExtracted() const noexcept
       {
-         if (!m_isImfValid)
-            throw ImfUnavailableException();
-         return std::move(m_pnewH);
+         return m_isImfValid;
       }
-      UPtr MoveResidue() noexcept
+      TData GetImfAt(int index) const
       {
-         return std::move(m_pprevH);
+         return m_pnewH[index];
+      }
+      UPtr MoveImf() noexcept
+      {
+         return std::move(m_pnewH);
       }
 
    private:
@@ -391,14 +391,15 @@ namespace Processing
          maxImfCount = min(maxImfCount, std::log2(length) + 1);
          m_imfs.reserve(maxImfCount);
 
-         try {
-            do {
-               Sifter<TData> s(xValues, m_pResidue, m_length);
-               m_imfs.push_back(s.MoveImf()); // might throw
-               m_pResidue = s.MoveResidue();
-            } while (--maxImfCount > 0);
-         }
-         catch (const ImfUnavailableException&) { }
+         do {
+            Sifter<TData> s(xValues, m_pResidue, m_length);
+            if (!s.IsImfExtracted())
+               return;
+            for (int i = 0; i < m_length; ++i) {
+               m_pResidue[i] = m_pResidue[i] - s.GetImfAt(i);
+            }
+            m_imfs.push_back(s.MoveImf());
+         } while (--maxImfCount > 0);
       }
 
       int GetImfCount() const noexcept

@@ -18,8 +18,11 @@
 #include <complex>
 #include <cmath>
 #include "ISpectralAnalysis.h"
+#include "IHilbertSpectrum.h"
 
 using namespace Platform;
+using namespace Platform::Collections;
+using namespace Windows::Foundation::Collections;
 
 #ifndef M_PI
  #define M_PI 3.14159265358979323846
@@ -214,6 +217,7 @@ namespace Processing
       Array<TData>^ m_pInstPhas;
       Array<TData>^ m_pInstFreq;
 
+   internal:
       SpectralAnalyzerBase(const Array<TData>^ yValues, TData timeStep) : m_length(yValues->Length),
          m_pInstAmpl(ref new Array<TData>(m_length)), m_pInstPhas(ref new Array<TData>(m_length)), m_pInstFreq(ref new Array<TData>(m_length - 1))
       {
@@ -241,6 +245,22 @@ namespace Processing
             fillAmplTask();
             fillPhasFreqTask();
          }
+      }
+      TData GetAmplitudeAt(int i) const
+      {
+         return m_pInstAmpl[i];
+      }
+      TData GetPhaseAt(int i) const
+      {
+         return m_pInstPhas[i];
+      }
+      TData GetFrequencyAt(int i) const
+      {
+         return m_pInstFreq[i];
+      }
+      int GetLength() const noexcept
+      {
+         return m_length;
       }
    };
 
@@ -302,6 +322,126 @@ namespace Processing
          {
             return m_pInstFreq;
          }
+      }
+   };
+
+   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   private ref class HilbertSpectrumBase
+   {
+      typedef SpectralAnalyzerBase<TData>^ AnalyzerPtr;
+
+   private protected:
+      std::vector<AnalyzerPtr> m_analyses;
+      TData m_maxFreq, m_minFreq;
+      TData m_timestep;
+
+      HilbertSpectrumBase(std::vector<Array<TData>^> imfs, TData timestep) : m_analyses(imfs.size()), m_maxFreq(0.0), m_minFreq(0.0), m_timestep(timestep)
+      {
+         concurrency::parallel_for((size_t)0, imfs.size(), [this, &imfs](size_t i) {
+            this->m_analyses[i] = ref new SpectralAnalyzerBase<TData>(imfs[i], this->m_timestep);
+         });
+         
+         m_maxFreq = m_minFreq = (m_analyses[0])->GetFrequencyAt(0);
+         for (const AnalyzerPtr& pAnalyzer : m_analyses) {
+            for (int i = 0; i < pAnalyzer->GetLength() - 1; ++i) {
+               TData freq = pAnalyzer->GetFrequencyAt(i);
+               if (freq < m_minFreq)
+                  m_minFreq = freq;
+               else if (freq > m_maxFreq)
+                  m_maxFreq = freq;
+            }
+         }
+      }
+      TData GetSpectrumAt(TData w, int t, TData maxError) const
+      {
+         TData res = 0.0;
+         for (const AnalyzerPtr& pAnalysis : m_analyses) {
+            TData error = pAnalysis->GetFrequencyAt(t) - w;
+            if (error < maxError && error > -maxError) {
+               res += pAnalysis->GetAmplitudeAt(t);
+            }
+         }
+         return res;
+      }
+      TData GetMarginalAt(TData w, TData maxError) const
+      {
+         const int length = (m_analyses[0])->GetLength() - 1;
+         TData res = 0.0;
+         for (int i = 1; i < length; ++i) {
+            // linear interpolation
+            TData mean = 0.5 * (GetSpectrumAt(w, i - 1, maxError) + GetSpectrumAt(w, i, maxError));
+            res += mean * m_timestep;
+         }
+         return res;
+      }
+   };
+
+   template <typename TData>
+   ref class HilbertSpectrum;
+
+   template<>
+   private ref class HilbertSpectrum<double> : public HilbertSpectrumBase<double>, public IHilbertSpectrumDouble
+   {
+   internal:
+      HilbertSpectrum(std::vector<Array<double>^> imfs, double timestep) : HilbertSpectrumBase(std::move(imfs), timestep)
+      { }
+
+   public:
+      // Inherited via IHilbertSpectrumDouble
+      virtual property double MaxFrequency {
+         double get()
+         {
+            return m_maxFreq;
+         }
+      }
+      virtual property double MinFrequency {
+         double get()
+         {
+            return m_minFreq;
+         }
+      }
+      virtual double ComputeAt(double t, double w)
+      {
+         double error = (m_maxFreq - m_minFreq) / 1000.0;
+         return GetSpectrumAt(w, t, error);
+      }
+      virtual double ComputeMarginalAt(double w)
+      {
+         double error = (m_maxFreq - m_minFreq) / 1000.0;
+         return GetMarginalAt(w, error);
+      }
+   };
+
+   template<>
+   private ref class HilbertSpectrum<float> : public HilbertSpectrumBase<float>, public IHilbertSpectrumSingle
+   {
+   internal:
+      HilbertSpectrum(std::vector<Array<float>^> imfs, float timestep) : HilbertSpectrumBase(std::move(imfs), timestep)
+      { }
+
+   public:
+      // Inherited via IHilbertSpectrumSingle
+      virtual property float MaxFrequency {
+         float get()
+         {
+            return m_maxFreq;
+         }
+      }
+      virtual property float MinFrequency {
+         float get()
+         {
+            return m_minFreq;
+         }
+      }
+      virtual float ComputeAt(float t, float w)
+      {
+         float error = (m_maxFreq - m_minFreq) / 1000.0f;
+         return GetSpectrumAt(w, t, error);
+      }
+      virtual float ComputeMarginalAt(float w)
+      {
+         float error = (m_maxFreq - m_minFreq) / 1000.0f;
+         return GetMarginalAt(w, error);
       }
    };
 

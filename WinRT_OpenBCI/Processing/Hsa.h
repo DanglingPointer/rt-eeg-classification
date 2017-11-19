@@ -15,6 +15,8 @@
 */
 #pragma once
 #include "ISpectralAnalysis.h"
+#include "IImfDecomposition.h"
+#include "IHilbertSpectrum.h"
 
 using namespace Windows::Foundation;
 using namespace Platform;
@@ -89,6 +91,31 @@ namespace Processing
       /// <param name="timeStep">Average interval between data points</param>
       /// <returns>Analysis results</returns>
       static IAsyncOperation<ISpectralAnalysisSingle^>^ AnalyseAsync(const Array<float>^ yValues, float timeStep);
+
+
+      /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="emd"></param>
+      /// <returns></returns>
+      static IHilbertSpectrumDouble^ GetHilbertSpectrum(const IImfDecompositionDouble^ emd);
+      /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="emd"></param>
+      /// <returns></returns>
+      static IHilbertSpectrumSingle^ GetHilbertSpectrum(const IImfDecompositionSingle^ emd);
+
+      /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="emd"></param>
+      /// <returns></returns>
+      static IAsyncOperation<IHilbertSpectrumDouble^>^ GetHilbertSpectrumAsync(const IImfDecompositionDouble^ emd);
+      /// <summary>
+      /// 
+      /// </summary>
+      static IAsyncOperation<IHilbertSpectrumSingle^>^ GetHilbertSpectrumAsync(const IImfDecompositionSingle^ emd);
    };
 }
 
