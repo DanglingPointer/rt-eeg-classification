@@ -207,8 +207,9 @@ namespace Gui
             OnPropertyChanged(nameof(DataSeries));
 
             var ampValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstAmplitudes.Length; i += 2) {
-                ampValues.Add(analysis.InstAmplitudes[i]);
+            double[] amplitudes = analysis.InstAmplitudes;
+            for (int i = 0; i < amplitudes.Length; i += 2) {
+                ampValues.Add(amplitudes[i]);
             }
             _amplitudes = new SeriesCollection {
                 new LineSeries {
@@ -222,8 +223,9 @@ namespace Gui
             OnPropertyChanged(nameof(Amplitudes));
 
             var phasValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstPhases.Length; i += 2) {
-                phasValues.Add(analysis.InstPhases[i]);
+            double[] phases = analysis.InstPhases;
+            for (int i = 0; i < phases.Length; i += 2) {
+                phasValues.Add(phases[i]);
             }
             _phases = new SeriesCollection {
                 new LineSeries {
@@ -237,8 +239,9 @@ namespace Gui
             OnPropertyChanged(nameof(Phases));
 
             var freqValues = new ChartValues<double>();
-            for (int i = 0; i < analysis.InstFrequencies.Length; i += 2) {
-                freqValues.Add(analysis.InstFrequencies[i]);
+            double[] frequencies = analysis.InstFrequencies;
+            for (int i = 0; i < frequencies.Length; i += 2) {
+                freqValues.Add(frequencies[i]);
             }
             _frequencies = new SeriesCollection {
                 new LineSeries {

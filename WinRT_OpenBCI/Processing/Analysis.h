@@ -335,10 +335,13 @@ namespace Processing
       TData m_maxFreq, m_minFreq;
       TData m_timestep;
 
-      HilbertSpectrumBase(std::vector<Array<TData>^> imfs, TData timestep) : m_analyses(imfs.size()), m_maxFreq(0.0), m_minFreq(0.0), m_timestep(timestep)
+      HilbertSpectrumBase(IVector<IVector<TData>^>^ imfs, TData timestep) : m_analyses(imfs->Size), m_maxFreq(0.0), m_minFreq(0.0), m_timestep(timestep)
       {
-         concurrency::parallel_for((size_t)0, imfs.size(), [this, &imfs](size_t i) {
-            this->m_analyses[i] = ref new SpectralAnalyzerBase<TData>(imfs[i], this->m_timestep);
+         concurrency::parallel_for((size_t)0, (size_t)(imfs->Size), [this, imfs](size_t i) {
+            IVector<TData>^ imf = imfs->GetAt(i);
+            Array<TData>^ pdata = ref new Array<TData>(imf->Size);
+            std::copy(begin(imf), end(imf), pdata->begin());
+            this->m_analyses[i] = ref new SpectralAnalyzerBase<TData>(pdata, this->m_timestep);
          });
          
          m_maxFreq = m_minFreq = (m_analyses[0])->GetFrequencyAt(0);
@@ -369,7 +372,7 @@ namespace Processing
          TData res = 0.0;
          for (int i = 1; i < length; ++i) {
             // linear interpolation
-            TData mean = 0.5 * (GetSpectrumAt(w, i - 1, maxError) + GetSpectrumAt(w, i, maxError));
+            TData mean = (TData)0.5 * (GetSpectrumAt(w, i - 1, maxError) + GetSpectrumAt(w, i, maxError));
             res += mean * m_timestep;
          }
          return res;
@@ -383,7 +386,7 @@ namespace Processing
    private ref class HilbertSpectrum<double> : public HilbertSpectrumBase<double>, public IHilbertSpectrumDouble
    {
    internal:
-      HilbertSpectrum(std::vector<Array<double>^> imfs, double timestep) : HilbertSpectrumBase(std::move(imfs), timestep)
+      HilbertSpectrum(IVector<IVector<double>^>^ imfs, double timestep) : HilbertSpectrumBase(imfs, timestep)
       { }
 
    public:
@@ -403,7 +406,7 @@ namespace Processing
       virtual double ComputeAt(double t, double w)
       {
          double error = (m_maxFreq - m_minFreq) / 1000.0;
-         return GetSpectrumAt(w, t, error);
+         return GetSpectrumAt(w, (int)t, error);
       }
       virtual double ComputeMarginalAt(double w)
       {
@@ -416,7 +419,7 @@ namespace Processing
    private ref class HilbertSpectrum<float> : public HilbertSpectrumBase<float>, public IHilbertSpectrumSingle
    {
    internal:
-      HilbertSpectrum(std::vector<Array<float>^> imfs, float timestep) : HilbertSpectrumBase(std::move(imfs), timestep)
+      HilbertSpectrum(IVector<IVector<float>^>^ imfs, float timestep) : HilbertSpectrumBase(imfs, timestep)
       { }
 
    public:
@@ -436,7 +439,7 @@ namespace Processing
       virtual float ComputeAt(float t, float w)
       {
          float error = (m_maxFreq - m_minFreq) / 1000.0f;
-         return GetSpectrumAt(w, t, error);
+         return GetSpectrumAt(w, (int)t, error);
       }
       virtual float ComputeMarginalAt(float w)
       {

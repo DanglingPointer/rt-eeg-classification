@@ -94,28 +94,72 @@ namespace Processing
 
 
       /// <summary>
-      /// 
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Synchronous double-precision calculations.
       /// </summary>
-      /// <param name="emd"></param>
-      /// <returns></returns>
-      static IHilbertSpectrumDouble^ GetHilbertSpectrum(const IImfDecompositionDouble^ emd);
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="timestep">Mean time step</param>
+      /// <returns>Hilbert spectrum</returns>
+      static IHilbertSpectrumDouble^ GetHilbertSpectrum(IImfDecompositionDouble^ emd, double timestep);
       /// <summary>
-      /// 
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Synchronous single-precision calculations.
       /// </summary>
-      /// <param name="emd"></param>
-      /// <returns></returns>
-      static IHilbertSpectrumSingle^ GetHilbertSpectrum(const IImfDecompositionSingle^ emd);
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="timestep">Mean time step</param>
+      /// <returns>Hilbert spectrum</returns>
+      static IHilbertSpectrumSingle^ GetHilbertSpectrum(IImfDecompositionSingle^ emd, float timestep);
 
       /// <summary>
-      /// 
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Asynchronous double-precision calculations.
       /// </summary>
-      /// <param name="emd"></param>
-      /// <returns></returns>
-      static IAsyncOperation<IHilbertSpectrumDouble^>^ GetHilbertSpectrumAsync(const IImfDecompositionDouble^ emd);
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="timestep">Mean time step</param>
+      /// <returns>Hilbert spectrum</returns>
+      static IAsyncOperation<IHilbertSpectrumDouble^>^ GetHilbertSpectrumAsync(IImfDecompositionDouble^ emd, double timestep);
       /// <summary>
-      /// 
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Asynchronous single-precision calculations.
       /// </summary>
-      static IAsyncOperation<IHilbertSpectrumSingle^>^ GetHilbertSpectrumAsync(const IImfDecompositionSingle^ emd);
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="timestep">Mean time step</param>
+      /// <returns>Hilbert spectrum</returns>
+      static IAsyncOperation<IHilbertSpectrumSingle^>^ GetHilbertSpectrumAsync(IImfDecompositionSingle^ emd, float timestep);
+
+      /// <summary>
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Synchronous double-precision calculations.
+      /// </summary>
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="xValues">Corresponding time values</param>
+      /// <returns>Hilobert spectrum</returns>
+      static IHilbertSpectrumDouble^ GetHilbertSpectrum(IImfDecompositionDouble^ emd, const Array<double>^ xValues);
+      /// <summary>
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Synchronous single-precision calculations.
+      /// </summary>
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="xValues">Corresponding time values</param>
+      /// <returns>Hilobert spectrum</returns>
+      static IHilbertSpectrumSingle^ GetHilbertSpectrum(IImfDecompositionSingle^ emd, const Array<float>^ xValues);
+
+      /// <summary>
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Asynchronous double-precision calculations.
+      /// </summary>
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="xValues">Corresponding time values</param>
+      /// <returns>Hilobert spectrum</returns>
+      static IAsyncOperation<IHilbertSpectrumDouble^>^ GetHilbertSpectrumAsync(IImfDecompositionDouble^ emd, const Array<double>^ xValues);
+      /// <summary>
+      /// Returns an object that can calculate Hilbert Spectrum and Marginal Hilbert Spectrum for a signal
+      /// with the given Intrinsic Mode Functions. Asynchronous single-precision calculations.
+      /// </summary>
+      /// <param name="emd">Empirical Mode decomposition of the signal of interest</param>
+      /// <param name="xValues">Corresponding time values</param>
+      /// <returns>Hilobert spectrum</returns>
+      static IAsyncOperation<IHilbertSpectrumSingle^>^ GetHilbertSpectrumAsync(IImfDecompositionSingle^ emd, const Array<float>^ xValues);
    };
 }
 

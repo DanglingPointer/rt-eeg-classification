@@ -20,10 +20,21 @@
 using namespace Processing;
 using namespace Platform;
 
+template<typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+inline TData MeanStep(const Array<TData>^ pdata)
+{
+   TData dt = (TData)0.0;
+   for (uint32 i = 0; i < pdata->Length - 1; ++i) {
+      dt += pdata[i + 1] - pdata[i];
+   }
+   dt /= (pdata->Length - (TData)1.0);
+   return dt;
+}
+
 [Windows::Foundation::Metadata::DefaultOverloadAttribute()]
 ISpectralAnalysisDouble ^ Hsa::Analyse(const Array<double>^ yValues, double timeStep)
 {
-   return static_cast<ISpectralAnalysisDouble^>(ref new SpectralAnalyzer<double>(yValues, timeStep));
+   return ref new SpectralAnalyzer<double>(yValues, timeStep);
 }
 [Windows::Foundation::Metadata::DefaultOverloadAttribute()]
 inline IAsyncOperation<ISpectralAnalysisDouble^>^ Hsa::AnalyseAsync(const Array<double>^ yValues, double timeStep)
@@ -33,15 +44,9 @@ inline IAsyncOperation<ISpectralAnalysisDouble^>^ Hsa::AnalyseAsync(const Array<
    });
 }
 
-
 ISpectralAnalysisDouble ^ Hsa::Analyse(const Array<double>^ yValues, const Array<double>^ xValues)
 {
-   double dt = 0.0;
-   for (uint32 i = 0; i < xValues->Length - 1; ++i) {
-      dt += xValues[i + 1] - xValues[i];
-   }
-   dt /= (xValues->Length - 1.0);
-   return Hsa::Analyse(yValues, dt);
+   return Hsa::Analyse(yValues, MeanStep(xValues));
 }
 inline IAsyncOperation<ISpectralAnalysisDouble^>^ Hsa::AnalyseAsync(const Array<double>^ yValues, const Array<double>^ xValues)
 {
@@ -50,11 +55,9 @@ inline IAsyncOperation<ISpectralAnalysisDouble^>^ Hsa::AnalyseAsync(const Array<
    });
 }
 
-
-
 ISpectralAnalysisSingle ^ Hsa::Analyse(const Array<float>^ yValues, float timeStep)
 {
-   return static_cast<ISpectralAnalysisSingle^>(ref new SpectralAnalyzer<float>(yValues, timeStep));
+   return ref new SpectralAnalyzer<float>(yValues, timeStep);
 }
 inline IAsyncOperation<ISpectralAnalysisSingle^>^ Hsa::AnalyseAsync(const Array<float>^ yValues, float timeStep)
 {
@@ -63,15 +66,9 @@ inline IAsyncOperation<ISpectralAnalysisSingle^>^ Hsa::AnalyseAsync(const Array<
    });
 }
 
-
 ISpectralAnalysisSingle ^ Hsa::Analyse(const Array<float>^ yValues, const Array<float>^ xValues)
 {
-   float dt = 0.0;
-   for (uint32 i = 0; i < xValues->Length - 1; ++i) {
-      dt += xValues[i + 1] - xValues[i];
-   }
-   dt /= (xValues->Length - 1.0f);
-   return static_cast<ISpectralAnalysisSingle^>(ref new SpectralAnalyzer<float>(yValues, dt));
+   return ref new SpectralAnalyzer<float>(yValues, MeanStep(xValues));
 }
 inline IAsyncOperation<ISpectralAnalysisSingle^>^ Hsa::AnalyseAsync(const Array<float>^ yValues, const Array<float>^ xValues)
 {
@@ -80,4 +77,50 @@ inline IAsyncOperation<ISpectralAnalysisSingle^>^ Hsa::AnalyseAsync(const Array<
    });
 }
 
+
+[Windows::Foundation::Metadata::DefaultOverloadAttribute()]
+IHilbertSpectrumDouble ^ Hsa::GetHilbertSpectrum(IImfDecompositionDouble ^ emd, double timestep)
+{
+   return ref new HilbertSpectrum<double>(emd->ImfFunctions, timestep);
+}
+[Windows::Foundation::Metadata::DefaultOverloadAttribute()]
+inline IAsyncOperation<IHilbertSpectrumDouble^>^ Hsa::GetHilbertSpectrumAsync(IImfDecompositionDouble ^ emd, double timestep)
+{
+   return concurrency::create_async([=]() {
+      return Hsa::GetHilbertSpectrum(emd, timestep);
+   });
+}
+
+IHilbertSpectrumSingle ^ Hsa::GetHilbertSpectrum(IImfDecompositionSingle ^ emd, float timestep)
+{
+   return ref new HilbertSpectrum<float>(emd->ImfFunctions, timestep);
+}
+inline IAsyncOperation<IHilbertSpectrumSingle^>^ Hsa::GetHilbertSpectrumAsync(IImfDecompositionSingle ^ emd, float timestep)
+{
+   return concurrency::create_async([=]() {
+      return Hsa::GetHilbertSpectrum(emd, timestep);
+   });
+}
+
+IHilbertSpectrumDouble ^ Hsa::GetHilbertSpectrum(IImfDecompositionDouble ^ emd, const Array<double>^ xValues)
+{
+   return ref new HilbertSpectrum<double>(emd->ImfFunctions, MeanStep(xValues));
+}
+inline IAsyncOperation<IHilbertSpectrumDouble^>^ Hsa::GetHilbertSpectrumAsync(IImfDecompositionDouble ^ emd, const Array<double>^ xValues)
+{
+   return concurrency::create_async([=]() {
+      return Hsa::GetHilbertSpectrum(emd, xValues);
+   });
+}
+
+IHilbertSpectrumSingle ^ Hsa::GetHilbertSpectrum(IImfDecompositionSingle ^ emd, const Array<float>^ xValues)
+{
+   return ref new HilbertSpectrum<float>(emd->ImfFunctions, MeanStep(xValues));
+}
+inline IAsyncOperation<IHilbertSpectrumSingle^>^ Hsa::GetHilbertSpectrumAsync(IImfDecompositionSingle ^ emd, const Array<float>^ xValues)
+{
+   return concurrency::create_async([=]() {
+      return Hsa::GetHilbertSpectrum(emd, xValues);
+   });
+}
 
