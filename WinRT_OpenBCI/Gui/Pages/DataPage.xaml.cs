@@ -73,10 +73,47 @@ namespace Gui
                 }
             }
         }
+        private void Spectrum_OnClick(object sender, RoutedEventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn != null) {
+                int? channelIndex = null;
+
+                if (btn == btnSpectrum0) {
+                    channelIndex = 0;
+                }
+                else if (btn == btnSpectrum1) {
+                    channelIndex = 1;
+                }
+                else if (btn == btnSpectrum2) {
+                    channelIndex = 2;
+                }
+                else if (btn == btnSpectrum3) {
+                    channelIndex = 3;
+                }
+                else if (btn == btnSpectrum4) {
+                    channelIndex = 4;
+                }
+                else if (btn == btnSpectrum5) {
+                    channelIndex = 5;
+                }
+                else if (btn == btnSpectrum6) {
+                    channelIndex = 6;
+                }
+                else if (btn == btnSpectrum7) {
+                    channelIndex = 7;
+                }
+
+                if (channelIndex != null) {
+                    Frame.Navigate(typeof(HilbertPage), channelIndex);
+                }
+            }
+        }
 
         private void Back_OnClick(object sender, RoutedEventArgs e)
         {
             Frame.GoBack();
         }
+
     }
 }

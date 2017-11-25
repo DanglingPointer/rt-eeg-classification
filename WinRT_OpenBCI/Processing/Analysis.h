@@ -203,7 +203,7 @@ namespace Processing
 #pragma endregion
 
 
-#pragma region C++/CX ref classes
+#pragma region Instantaneous Analysis
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    private ref class SpectralAnalyzerBase
@@ -324,6 +324,11 @@ namespace Processing
          }
       }
    };
+
+#pragma endregion
+
+
+#pragma region Hilbert spectrum
 
    template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
    private ref class HilbertSpectrumBase

@@ -9,15 +9,11 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <Style TargetType="TextBlock">
-            <Setter Property="Margin" Value="10" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
         <Style TargetType="Button">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="10" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
     </Page.Resources>
 
@@ -42,16 +38,39 @@
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
 
                     <Button Name="btnAnalyse0" Content="Analyse" Grid.Row="0" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse1" Content="Analyse" Grid.Row="1" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse2" Content="Analyse" Grid.Row="2" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse3" Content="Analyse" Grid.Row="3" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse4" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse5" Content="Analyse" Grid.Row="5" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse6" Content="Analyse" Grid.Row="6" Click="Analyse_OnClick"  />
-                    <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="7" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum0" Content="Spectrum" Grid.Row="1" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse1" Content="Analyse" Grid.Row="2" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum1" Content="Spectrum" Grid.Row="3" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse2" Content="Analyse" Grid.Row="4" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum2" Content="Spectrum" Grid.Row="5" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse3" Content="Analyse" Grid.Row="6" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum3" Content="Spectrum" Grid.Row="7" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse4" Content="Analyse" Grid.Row="8" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum4" Content="Spectrum" Grid.Row="9" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse5" Content="Analyse" Grid.Row="10" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum5" Content="Spectrum" Grid.Row="11" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse6" Content="Analyse" Grid.Row="12" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum6" Content="Spectrum" Grid.Row="13" Click="Spectrum_OnClick" />
+
+                    <Button Name="btnAnalyse7" Content="Analyse" Grid.Row="14" Click="Analyse_OnClick"  />
+                    <Button Name="btnSpectrum7" Content="Spectrum" Grid.Row="15" Click="Spectrum_OnClick" />
                 </Grid>
 
                 <!--Left column-->

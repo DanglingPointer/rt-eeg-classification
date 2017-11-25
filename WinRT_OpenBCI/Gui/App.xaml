@@ -5,4 +5,13 @@
     xmlns:local="using:Gui"
     RequestedTheme="Light">
 
+    <Application.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="12" />
+        </Style>        
+    </Application.Resources>
+
 </Application>

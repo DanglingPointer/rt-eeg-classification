@@ -249,23 +249,24 @@ namespace Processing
                minY.push_back(yValues[i]);
                minX.push_back(xValues[i]);
             }
-            if ((yValues[i] < 0 && yValues[i + 1] >= 0)
-                || (yValues[i] > 0 && yValues[i + 1] <= 0)) {
-               m_zeroCrossingCount++;
-            }
          }
+         for (int i = 0; i < m_length - 1; ++i) {
+            if ((yValues[i] < 0 && yValues[i + 1] >= 0) || (yValues[i] > 0 && yValues[i + 1] <= 0)) 
+               m_zeroCrossingCount++;
+         }
+         if (yValues[0] == 0.0 && yValues[1] != 0.0)
+            m_zeroCrossingCount++;
+
          maxY.push_back(yValues[m_length - 1]);
          maxX.push_back(xValues[m_length - 1]);
-         m_upperExtremaCount = maxY.size();
+         m_upperExtremaCount = maxY.size() - 2;
 
          minY.push_back(yValues[m_length - 1]);
          minX.push_back(xValues[m_length - 1]);
-         m_lowerExtremaCount = minY.size();
+         m_lowerExtremaCount = minY.size() - 2;
 
-         if (yValues[0] == 0.0 || yValues[1] == 0.0)
-            m_zeroCrossingCount++;
 
-         if (maxY.size() <= 2 && minY.size() <= 2) {
+         if (maxY.size() == 2 && minY.size() == 2) {
             throw MonotonicFunctionException();
          }
 
@@ -326,9 +327,19 @@ namespace Processing
       {
          memcpy(m_pprevH.get(), yValues.get(), sizeof(TData)*length);
          try {
-            SiftResursively(xValues);
-            for (int i = 0; i < m_length; ++i) {
-               m_pprevH[i] = yValues[i] - m_pnewH[i];
+            bool finished = false;
+            while (!finished) {
+               EnvelopeFinder<TData> envs(xValues, m_pprevH, m_length);
+               for (int i = 0; i < m_length; ++i) {
+                  TData meanEnvelope = 0.5 * (envs.GetUpperEnvelopeAt(i) + envs.GetLowerEnvelopeAt(i));
+                  m_pnewH[i] = m_pprevH[i] - meanEnvelope;
+               }
+
+               int extremaCount = envs.GetUpperExtremaCount() + envs.GetLowerExtremaCount();
+               int diff = extremaCount - envs.GetZeroCrossingCount();
+               if (!(finished = IsSiftingFinished(diff))) {
+                  memcpy(m_pprevH.get(), m_pnewH.get(), sizeof(TData) * m_length);
+               }
             }
          }
          catch (const MonotonicFunctionException&) {
@@ -351,27 +362,15 @@ namespace Processing
       }
 
    private:
-      void SiftResursively(const UPtr& xValues)
+      bool IsSiftingFinished(int extremaCountDiff) const
       {
-         EnvelopeFinder<TData> envelopes(xValues, m_pprevH, m_length);
-         for (int i = 0; i < m_length; ++i) {
-            TData meanEnvelope = 0.5 * (envelopes.GetUpperEnvelopeAt(i) + envelopes.GetLowerEnvelopeAt(i));
-            m_pnewH[i] = m_pprevH[i] - meanEnvelope;
-         }
-
-         if (!IsSiftingFinished()) {
-            memcpy(m_pprevH.get(), m_pnewH.get(), sizeof(TData) * m_length);
-            SiftResursively(xValues);
-         }
-      }
-      bool IsSiftingFinished() const
-      {
-         TData numerator = 0.0, denominator = 0.0;
-         for (int i = 0; i < m_length; ++i) {
-            numerator += (m_pprevH[i] - m_pnewH[i]) * (m_pprevH[i] - m_pnewH[i]);
-            denominator += m_pprevH[i] * m_pprevH[i];
-         }
-         return (numerator / denominator) < 0.1;
+         //TData numerator = 0.0, denominator = 0.0;
+         //for (int i = 0; i < m_length; ++i) {
+         //   numerator += (m_pprevH[i] - m_pnewH[i]) * (m_pprevH[i] - m_pnewH[i]);
+         //   denominator += m_pprevH[i] * m_pprevH[i];
+         //}
+         //return (numerator / denominator) < 0.1;
+         return extremaCountDiff > -3 && extremaCountDiff < 3;
       }
    };
 
