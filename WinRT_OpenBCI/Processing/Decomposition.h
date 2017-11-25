@@ -14,12 +14,12 @@
 *    limitations under the License.
 */
 #pragma once
-#include <array>
 #include <vector>
 #include <cmath>
 #include <stdexcept>
 #include <random>
 #include <algorithm>
+#include <memory>
 #include "IImfDecomposition.h"
 
 using namespace Platform;
@@ -93,7 +93,7 @@ namespace Processing
       const int m_length;
 
    public:
-      static ValArray Compute(std::vector<TData> x, std::vector<TData> y, const ValArray& xs, int splineLength)
+      static ValArray Compute(std::vector<TData> x, std::vector<TData> y, const TData *xs, int splineLength)
       {
          CubicSpline<TData> cs(std::move(x), std::move(y));
          auto m = cs.Fit();
@@ -139,7 +139,7 @@ namespace Processing
 
          return tdm.Solve();
       }
-      ValArray Evaluate(const ValArray& xs, int length, ValArray m)
+      ValArray Evaluate(const TData *xs, int length, ValArray m)
       {
          ValArray ys = std::make_unique<TData[]>(length);
 
@@ -173,7 +173,7 @@ namespace Processing
    public:
       LinearSpline() = delete;
 
-      static UPtr Compute(const std::vector<TData>& x, const std::vector<TData>& y, const UPtr& xs, int length)
+      static UPtr Compute(const std::vector<TData>& x, const std::vector<TData>& y, const TData *xs, int length)
       {
          std::unique_ptr<TData[]> ys = std::make_unique<TData[]>(length);
 
@@ -207,7 +207,7 @@ namespace Processing
       const int m_length;
 
    public:
-      EnvelopeFinder(const UPtr& xValues, const UPtr& yValues, int length)
+      EnvelopeFinder(const TData *pxValues, const TData *pyValues, int length)
          : m_length(length), m_zeroCrossingCount(0), m_upperExtremaCount(0), m_lowerExtremaCount(0),
          m_upperEnvelope(nullptr), m_lowerEnvelope(nullptr)
       {
@@ -216,55 +216,55 @@ namespace Processing
          std::vector<TData> minX;
          std::vector<TData> minY;
 
-         maxY.push_back(yValues[0]);
-         maxX.push_back(xValues[0]);
-         minY.push_back(yValues[0]);
-         minX.push_back(xValues[0]);
+         maxY.push_back(pyValues[0]);
+         maxX.push_back(pxValues[0]);
+         minY.push_back(pyValues[0]);
+         minX.push_back(pxValues[0]);
 
          for (int i = 1; i < m_length - 1; ++i) {
-            if (yValues[i] > yValues[i - 1] && yValues[i] > yValues[i + 1]) {
-               maxY.push_back(yValues[i]);
-               maxX.push_back(xValues[i]);
+            if (pyValues[i] > pyValues[i - 1] && pyValues[i] > pyValues[i + 1]) {
+               maxY.push_back(pyValues[i]);
+               maxX.push_back(pxValues[i]);
             }
-            else if (yValues[i] < yValues[i - 1] && yValues[i] < yValues[i + 1]) {
-               minY.push_back(yValues[i]);
-               minX.push_back(xValues[i]);
+            else if (pyValues[i] < pyValues[i - 1] && pyValues[i] < pyValues[i + 1]) {
+               minY.push_back(pyValues[i]);
+               minX.push_back(pxValues[i]);
             }
          }
          for (int i = 0; i < m_length - 1; ++i) {
-            if ((yValues[i] < 0 && yValues[i + 1] >= 0) || (yValues[i] > 0 && yValues[i + 1] <= 0)) 
+            if ((pyValues[i] < 0 && pyValues[i + 1] >= 0) || (pyValues[i] > 0 && pyValues[i + 1] <= 0)) 
                m_zeroCrossingCount++;
          }
-         if (yValues[0] == 0.0 && yValues[1] != 0.0)
+         if (pyValues[0] == 0.0 && pyValues[1] != 0.0)
             m_zeroCrossingCount++;
 
-         maxY.push_back(yValues[m_length - 1]);
-         maxX.push_back(xValues[m_length - 1]);
+         maxY.push_back(pyValues[m_length - 1]);
+         maxX.push_back(pxValues[m_length - 1]);
          m_upperExtremaCount = maxY.size() - 2;
 
-         minY.push_back(yValues[m_length - 1]);
-         minX.push_back(xValues[m_length - 1]);
+         minY.push_back(pyValues[m_length - 1]);
+         minX.push_back(pxValues[m_length - 1]);
          m_lowerExtremaCount = minY.size() - 2;
 
 
-         if (maxY.size() == 2 && minY.size() == 2) {
+         if (m_upperExtremaCount == 0 && m_lowerExtremaCount == 0) {
             throw MonotonicFunctionException();
          }
 
-         auto upperSplineTask = [&maxX, &maxY, &xValues, this]() {
-            if (this->m_upperExtremaCount == 2) {
-               this->m_upperEnvelope = LinearSpline<TData>::Compute(maxX, maxY, xValues, this->m_length);
+         auto upperSplineTask = [&maxX, &maxY, pxValues, this]() {
+            if (this->m_upperExtremaCount == 0) {
+               this->m_upperEnvelope = LinearSpline<TData>::Compute(maxX, maxY, pxValues, this->m_length);
             }
             else {
-               this->m_upperEnvelope = CubicSpline<TData>::Compute(std::move(maxX), std::move(maxY), xValues, this->m_length);
+               this->m_upperEnvelope = CubicSpline<TData>::Compute(std::move(maxX), std::move(maxY), pxValues, this->m_length);
             }
          };
-         auto lowerSplineTask = [&minX, &minY, &xValues, this]() {
-            if (this->m_lowerExtremaCount == 2) {
-               this->m_lowerEnvelope = LinearSpline<TData>::Compute(minX, minY, xValues, this->m_length);
+         auto lowerSplineTask = [&minX, &minY, pxValues, this]() {
+            if (this->m_lowerExtremaCount == 0) {
+               this->m_lowerEnvelope = LinearSpline<TData>::Compute(minX, minY, pxValues, this->m_length);
             }
             else {
-               this->m_lowerEnvelope = CubicSpline<TData>::Compute(std::move(minX), std::move(minY), xValues, this->m_length);
+               this->m_lowerEnvelope = CubicSpline<TData>::Compute(std::move(minX), std::move(minY), pxValues, this->m_length);
             }
          };
          concurrency::parallel_invoke(upperSplineTask, lowerSplineTask);
@@ -299,18 +299,23 @@ namespace Processing
       typedef std::unique_ptr<TData[]> UPtr;
 
       const int m_length;
-      UPtr m_pprevH, m_pnewH;
+      UPtr m_pmemblock;
+
+      TData * const m_pnewH;
+      TData * const m_pprevH;
       bool m_isImfValid;
 
    public:
-      Sifter(const UPtr& xValues, const UPtr& yValues, int length) : m_isImfValid(true), m_length(length),
-         m_pprevH(std::make_unique<TData[]>(length)), m_pnewH(std::make_unique<TData[]>(length))
+      Sifter(const TData *pxValues, const TData *pyValues, int length) : m_isImfValid(true), m_length(length),
+         m_pmemblock(std::make_unique<TData[]>(length + length)),         
+         m_pnewH(m_pmemblock.get()),
+         m_pprevH(m_pnewH + length)
       {
-         memcpy(m_pprevH.get(), yValues.get(), sizeof(TData)*length);
+         memcpy(m_pprevH, pyValues, sizeof(TData)*length);
          try {
             bool finished = false;
             while (!finished) {
-               EnvelopeFinder<TData> envs(xValues, m_pprevH, m_length);
+               EnvelopeFinder<TData> envs(pxValues, m_pprevH, m_length);
                for (int i = 0; i < m_length; ++i) {
                   TData meanEnvelope = 0.5 * (envs.GetUpperEnvelopeAt(i) + envs.GetLowerEnvelopeAt(i));
                   m_pnewH[i] = m_pprevH[i] - meanEnvelope;
@@ -319,14 +324,12 @@ namespace Processing
                int extremaCount = envs.GetUpperExtremaCount() + envs.GetLowerExtremaCount();
                int diff = extremaCount - envs.GetZeroCrossingCount();
                if (!(finished = IsSiftingFinished(diff))) {
-                  memcpy(m_pprevH.get(), m_pnewH.get(), sizeof(TData) * m_length);
+                  memcpy(m_pprevH, m_pnewH, sizeof(TData) * m_length);
                }
             }
          }
          catch (const MonotonicFunctionException&) {
             m_isImfValid = false;
-            m_pnewH = nullptr;
-            m_pprevH = nullptr;
          }
       }
       bool IsImfExtracted() const noexcept
@@ -339,7 +342,7 @@ namespace Processing
       }
       UPtr MoveImf() noexcept
       {
-         return std::move(m_pnewH);
+         return std::move(m_pmemblock);
       }
 
    private:
@@ -360,9 +363,9 @@ namespace Processing
    {
       typedef std::unique_ptr<TData[]> UPtr;
 
+      const int m_length;
       UPtr m_pResidue;
       std::vector<UPtr> m_imfs;
-      const int m_length;
 
    public:
       InternalEmdDecomposer(UPtr xValues, UPtr yValues, int length, int maxImfCount)
@@ -372,7 +375,7 @@ namespace Processing
          m_imfs.reserve(maxImfCount);
 
          do {
-            Sifter<TData> s(xValues, m_pResidue, m_length);
+            Sifter<TData> s(xValues.get(), m_pResidue.get(), m_length);
             if (!s.IsImfExtracted())
                return;
             for (int i = 0; i < m_length; ++i) {
