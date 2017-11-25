@@ -139,7 +139,7 @@ namespace Gui
                 for (int i = 0; i < _channelData.Length; ++i)
                     xValues[i] = i;
 
-                decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 1.0, 50);
+                decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 0.1, 100);
                 DataManager.Current.Emds[_channelIndex] = decomp;
 
                 Status = null;
@@ -345,7 +345,7 @@ namespace Gui
                     xValues[i] = i;
 
                 Status = "Decomposing...";
-                decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 1.0, 50);
+                decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.1, 100);
                 DataManager.Current.Emds[channelIndex] = decomp;
             }
 

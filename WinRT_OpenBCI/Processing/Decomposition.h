@@ -87,10 +87,9 @@ namespace Processing
    {
       typedef std::unique_ptr<TData[]> ValArray;
 
+      const int m_length;
       std::vector<TData> m_x;
       std::vector<TData> m_y;
-
-      const int m_length;
 
    public:
       static ValArray Compute(std::vector<TData> x, std::vector<TData> y, const TData *xs, int splineLength)
@@ -102,7 +101,7 @@ namespace Processing
 
    private:
       CubicSpline(std::vector<TData> x, std::vector<TData> y) noexcept 
-         : m_x(std::move(x)), m_y(std::move(y)), m_length(x.size())
+         : m_length(x.size()), m_x(std::move(x)), m_y(std::move(y))
       { }
       // returns M
       ValArray Fit() const
@@ -268,6 +267,9 @@ namespace Processing
             }
          };
          concurrency::parallel_invoke(upperSplineTask, lowerSplineTask);
+
+         //std::vector<TData> debug_lower(m_lowerEnvelope.get(), m_lowerEnvelope.get() + m_length);
+         //std::vector<TData> debug_upper(m_upperEnvelope.get(), m_upperEnvelope.get() + m_length);
       }
 
       TData GetUpperEnvelopeAt(int index) const
@@ -348,13 +350,13 @@ namespace Processing
    private:
       bool IsSiftingFinished(int extremaCountDiff) const
       {
-         //TData numerator = 0.0, denominator = 0.0;
-         //for (int i = 0; i < m_length; ++i) {
-         //   numerator += (m_pprevH[i] - m_pnewH[i]) * (m_pprevH[i] - m_pnewH[i]);
-         //   denominator += m_pprevH[i] * m_pprevH[i];
-         //}
-         //return (numerator / denominator) < 0.1;
-         return extremaCountDiff > -3 && extremaCountDiff < 3;
+         TData numerator = 0.0, denominator = 0.0;
+         for (int i = 0; i < m_length; ++i) {
+            numerator += (m_pprevH[i] - m_pnewH[i]) * (m_pprevH[i] - m_pnewH[i]);
+            denominator += m_pprevH[i] * m_pprevH[i];
+         }
+         return (numerator / denominator) < 0.1 && 
+            extremaCountDiff > -2 && extremaCountDiff < 2;
       }
    };
 
