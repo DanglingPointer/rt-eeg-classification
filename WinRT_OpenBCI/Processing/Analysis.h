@@ -28,13 +28,16 @@ using namespace Windows::Foundation::Collections;
  #define M_PI 3.14159265358979323846
 #endif
 
+#define REQUIRES_FLOAT(T) typename = std::enable_if_t<std::is_floating_point_v<T>>
+#define REQUIRES_INT(T) typename = std::enable_if_t<std::is_integral_v<T>>
+
 //#define RECURSIVE_FFT
 
 namespace Processing
 {
 #pragma region Numerical Transforms
 
-   template <typename TInt, typename = std::enable_if<std::is_integral_v<TInt>>>
+   template <typename TInt, REQUIRES_INT(TInt)>
    inline TInt BitReversal(TInt value, size_t bitsCount)
    {
       TInt res = 0;
@@ -45,14 +48,16 @@ namespace Processing
       return res;
    }
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
-   class FastFourierTransform
+   template <typename TData, REQUIRES_FLOAT(TData)>
+   class FastFourierTransform final
    {
       typedef TData Val;              // value type
       typedef std::complex<Val> Cval; // complex value type
       typedef std::unique_ptr<Cval[]> CvalArr;
 
    public:
+      FastFourierTransform() = delete;
+
       // Uses zero-padding if length is not power of 2
       static CvalArr Forward(std::unique_ptr<Val[]> data, int length, int *pResultLength)
       {
@@ -171,8 +176,8 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
-   class HilbertTransform
+   template <typename TData, REQUIRES_FLOAT(TData)>
+   class HilbertTransform final
    {
       typedef TData Val; // value type
       typedef std::unique_ptr<Val[]> ValArr;
@@ -181,6 +186,8 @@ namespace Processing
       typedef std::unique_ptr<Cval[]> CvalArr;
 
    public:
+      HilbertTransform() = delete;
+
       // Matlab algorithm: https://se.mathworks.com/help/signal/ref/hilbert.html#f7-960889
       // The result array is at least as long as the input
       static CvalArr Forward(ValArr realData, int length)
@@ -205,7 +212,7 @@ namespace Processing
 
 #pragma region Instantaneous Analysis
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    private ref class SpectralAnalyzerBase
    {
       typedef std::unique_ptr<TData[]> Uptr;
@@ -330,7 +337,7 @@ namespace Processing
 
 #pragma region Hilbert spectrum
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    private ref class HilbertSpectrumBase
    {
       typedef SpectralAnalyzerBase<TData>^ AnalyzerPtr;

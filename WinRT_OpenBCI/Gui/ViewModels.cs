@@ -105,7 +105,7 @@ namespace Gui
         public Func<double, string> YLabelFormatter
         {
             get {
-                return (value) => value.ToString("F");
+                return (value) => value.ToString("#.000");
             }
         }
         public Func<double, string> XLabelFormatter
@@ -139,7 +139,7 @@ namespace Gui
                 for (int i = 0; i < _channelData.Length; ++i)
                     xValues[i] = i;
 
-                decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 0.1, 100);
+                decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 0.05, 100);
                 DataManager.Current.Emds[_channelIndex] = decomp;
 
                 Status = null;
@@ -305,7 +305,7 @@ namespace Gui
         public Func<double, string> YLabelFormatter
         {
             get {
-                return (value) => value.ToString("F");
+                return (value) => value.ToString("#.000");
             }
         }
         public Func<double, string> XLabelFormatter
@@ -345,7 +345,7 @@ namespace Gui
                     xValues[i] = i;
 
                 Status = "Decomposing...";
-                decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.1, 100);
+                decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.05, 100);
                 DataManager.Current.Emds[channelIndex] = decomp;
             }
 
@@ -389,7 +389,7 @@ namespace Gui
         public Func<double, string> YLabelFormatter
         {
             get {
-                return (value) => value.ToString("F");
+                return (value) => value.ToString("#.000");
             }
         }
         public Func<double, string> XLabelFormatter

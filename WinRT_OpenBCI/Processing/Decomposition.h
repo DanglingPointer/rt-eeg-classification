@@ -26,6 +26,8 @@ using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
 
+#define REQUIRES_FLOAT(T) typename = std::enable_if_t<std::is_floating_point_v<T>>
+
 namespace Processing
 {
 #pragma region Interpolation
@@ -33,7 +35,7 @@ namespace Processing
    /// <summary>
    /// Based on http://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
    /// </summary>
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class TriDiagonalMatrix
    {
       typedef std::unique_ptr<TData[]> ValArray;
@@ -82,7 +84,7 @@ namespace Processing
    /// <summary>
    /// Based on https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation, but minimizing number of divisions
    /// </summary>
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class CubicSpline final
    {
       typedef std::unique_ptr<TData[]> ValArray;
@@ -164,7 +166,7 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class LinearSpline final
    {
       typedef std::unique_ptr<TData[]> UPtr;
@@ -194,7 +196,7 @@ namespace Processing
    class MonotonicFunctionException : public std::exception
    { };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class EnvelopeFinder
    {
       typedef std::unique_ptr<TData[]> UPtr;
@@ -267,9 +269,6 @@ namespace Processing
             }
          };
          concurrency::parallel_invoke(upperSplineTask, lowerSplineTask);
-
-         //std::vector<TData> debug_lower(m_lowerEnvelope.get(), m_lowerEnvelope.get() + m_length);
-         //std::vector<TData> debug_upper(m_upperEnvelope.get(), m_upperEnvelope.get() + m_length);
       }
 
       TData GetUpperEnvelopeAt(int index) const
@@ -295,7 +294,7 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class Sifter
    {
       typedef std::unique_ptr<TData[]> UPtr;
@@ -360,7 +359,7 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    class InternalEmdDecomposer
    {
       typedef std::unique_ptr<TData[]> UPtr;
@@ -490,7 +489,7 @@ namespace Processing
    template<> 
    inline Array<float>^& DecomposerBase::GetResidue() { return m_pResidueS; }
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    private ref class EmdDecomposer : public DecomposerBase
    {
       typedef std::unique_ptr<TData[]> UPtr;
@@ -522,7 +521,7 @@ namespace Processing
       }
    };
 
-   template <typename TData, typename = std::enable_if_t<std::is_floating_point_v<TData>>>
+   template <typename TData, REQUIRES_FLOAT(TData)>
    private ref class EemdDecomposer : public DecomposerBase
    {
       typedef std::unique_ptr<TData[]> UPtr;
