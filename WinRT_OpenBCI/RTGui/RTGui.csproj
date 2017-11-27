@@ -95,14 +95,23 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ChartPage.xaml.cs">
-      <DependentUpon>ChartPage.xaml</DependentUpon>
+    <Compile Include="ChannelDataPage.xaml.cs">
+      <DependentUpon>ChannelDataPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EmdPage.xaml.cs">
+      <DependentUpon>EmdPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RTAnalysisPage.xaml.cs">
+      <DependentUpon>RTAnalysisPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="DataManager.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpectrumPage.xaml.cs">
+      <DependentUpon>SpectrumPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -125,13 +134,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="ChartPage.xaml">
+    <Page Include="ChannelDataPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EmdPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RTAnalysisPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SpectrumPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

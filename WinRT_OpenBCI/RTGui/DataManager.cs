@@ -12,11 +12,13 @@ namespace RTGui
 {
     public class DataManager
     {
-        public static ConcurrentDictionary<int, ChartPageViewModel> ChartPagesStates
-        { get; } = new ConcurrentDictionary<int, ChartPageViewModel>();
+        public static ConcurrentDictionary<int, RTAnalysisViewModel> ChartPagesStates
+        { get; } = new ConcurrentDictionary<int, RTAnalysisViewModel>();
 
         public static DataManager Current
         { get; } = new DataManager();
+
+        public const double ScaleFactor = 4.5d / 24.0d / 8388607.0d;
 
 
         public event Action<IHilbertSpectrumDouble, int> SampleAnalysed;
@@ -25,6 +27,7 @@ namespace RTGui
         private int _ensembleCount;
         private readonly object _sampleLock = new object();
         private List<BciData> _sample;
+        private List<BciData> _lastSample;
 
         private readonly ConcurrentQueue<List<BciData>> _queue;
         private volatile bool _queueStopped;
@@ -32,14 +35,16 @@ namespace RTGui
         private DataManager()
         {
             _sample = new List<BciData>();
+            _lastSample = null;
             _sampleSize = 500;
-            _ensembleCount = 100;
+            _ensembleCount = 500;
 
             _queue = new ConcurrentQueue<List<BciData>>();
-            _queueStopped = false;
+            _queueStopped = true;
         }
         public void Start()
         {
+            _queueStopped = false;
             Task.Run(async () => {
                 bool queueEmpty = false;
                 int queueLastLength = 0;
@@ -50,6 +55,7 @@ namespace RTGui
                     queueEmpty = !_queue.TryDequeue(out sample);
 
                     if (!queueEmpty) {
+                        Debug.WriteLine("Processing queue...");
                         // Update error and d_error
                         queueLengthSlope = _queue.Count - queueLastLength;
                         queueLastLength = _queue.Count;
@@ -60,19 +66,18 @@ namespace RTGui
                         for (int i = 0; i < sample.Count; ++i)
                             xValues[i] = i;
 
-                        Parallel.For(0, 8, async (channel) => {
+                        for (int channel = 0; channel < 8; ++channel) {
                             double[] yValues = new double[sample.Count];
                             for (int i = 0; i < sample.Count; ++i)
-                                yValues[i] = sample[i].ChannelData[channel];
+                                yValues[i] = sample[i].ChannelData[channel] * ScaleFactor;
 
                             var decomp = await Emd.EnsembleDecomposeAsync(xValues, yValues, 0.05, _ensembleCount);
                             var spectrum = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
-
+                            
                             SampleAnalysed?.Invoke(spectrum, channel);
-                        });
+                        }
                     }
                     else {
-                        queueLengthSlope = 0;
                         await Task.Delay(100);
                     }
                 }
@@ -84,16 +89,26 @@ namespace RTGui
         }
         public void EnqueueData(BciData data)
         {
-            List<BciData> sample = null;
+            if (_queueStopped)
+                return;
             lock (_sampleLock) {
                 _sample.Add(data);
                 if (_sample.Count >= _sampleSize) {
-                    sample = _sample;
+                    _lastSample = _sample;
                     _sample = new List<BciData>();
                 }
             }
-            if (sample != null)
-                _queue.Enqueue(sample);
+            if (_sample.Count == 0) {
+                _queue.Enqueue(_lastSample);
+                Debug.WriteLine("Sample enqueued");
+            }
+        }
+        /// <summary>
+        /// Copy of previous sample, might be used for static analysis
+        /// </summary>
+        public BciData[] LastSample
+        {
+            get => _lastSample?.ToArray();
         }
         public int SampleSize
         {
@@ -105,9 +120,10 @@ namespace RTGui
         }
         private void AdjustParameters(int e, int de)
         {
-            int u = 10 * e + 20 * de; // PD-controller
+            int u = 20 * e + 20 * de; // PD-controller
 
-            Debug.WriteLine($"PD-controller output = {u}");
+            Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
+            Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
 
             _ensembleCount -= u;
             if (_ensembleCount < 10) {

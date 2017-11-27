@@ -14,10 +14,10 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="75"/>
+            <RowDefinition Height="75"/>
             <RowDefinition Height="1*"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="75"/>
         </Grid.RowDefinitions>
 
         <Button Grid.Column="0" Grid.Row="0" Content="Connect" Click="Connect_OnClick" />
@@ -32,9 +32,9 @@
 
         <Frame Name="frmContent" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
-        <Button Grid.Column="0" Grid.Row="3" Content="Previous channel" Click="PrevChannel_OnClick" />
-        <Button Grid.Column="2" Grid.Row="3" Content="Next channel" Click="NextChannel_OnClick" />
-        <TextBlock Name="txtStatus" Grid.Column="1" Grid.Row="3" />
+        <TextBlock Name="txtStatus" Text="Welcome to RT Classifier!" Grid.Column="0" Grid.Row="3" />
+        <Button Grid.Column="1" Grid.Row="3" Content="Show real-time charts" Click="ShowCharts_OnClick" />
+        <Button Grid.Column="2" Grid.Row="3" Content="Show last sample" Click="ShowSample_OnClick" />
 
     </Grid>
 </Page>

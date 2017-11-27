@@ -25,13 +25,11 @@ namespace RTGui
     public sealed partial class MainPage : Page
     {
         private BciSerialAdapter _serial;
-        private int? _channel;
 
         public MainPage()
         {
             this.InitializeComponent();
         }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
@@ -39,12 +37,10 @@ namespace RTGui
             _serial = null;
             DataManager.Current.Stop();
         }
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
         }
-
         // --------------------------------------------------------------------------------------------------------------------
         private async void Connect_OnClick(object sender, RoutedEventArgs e)
         {
@@ -96,29 +92,21 @@ namespace RTGui
                 DataManager.Current.Stop();
             });
         }
-
-        private void PrevChannel_OnClick(object sender, RoutedEventArgs e)
+        private void ShowCharts_OnClick(object sender, RoutedEventArgs e)
         {
             PopupIfThrows(() => {
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
-                if (_channel == null)
-                    throw new InvalidOperationException("No way back, only forward");
-                _channel = (_channel == 0) ? 7 : (_channel - 1);
-                frmContent.Navigate(typeof(ChartPage), _channel);
+                frmContent.Navigate(typeof(RTAnalysisPage), 0);
             });
         }
-        private void NextChannel_OnClick(object sender, RoutedEventArgs e)
+        private void ShowSample_OnClick(object sender, RoutedEventArgs e)
         {
             PopupIfThrows(() => {
-                if (_serial == null)
-                    throw new InvalidOperationException("Not connected");
-                if (_channel == null) {
-                    _channel = -1;
-                }
-                _channel++;
-                _channel %= 8;
-                frmContent.Navigate(typeof(ChartPage), _channel);
+                if (_serial == null || DataManager.Current.LastSample == null)
+                    throw new InvalidOperationException("Operation unavailable");
+                Stop_OnClick(null, null);
+                frmContent.Navigate(typeof(ChannelDataPage));
             });
         }
         // --------------------------------------------------------------------------------------------------------------------
@@ -148,18 +136,6 @@ namespace RTGui
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Func<double, string> YLabelFormatter
-        {
-            get {
-                return (value) => value.ToString("#.000");
-            }
-        }
-        public Func<double, string> XLabelFormatter
-        {
-            get {
-                return (value) => value.ToString();
-            }
-        }
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

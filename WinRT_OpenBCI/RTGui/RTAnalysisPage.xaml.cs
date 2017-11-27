@@ -20,29 +20,30 @@ using LiveCharts.Defaults;
 using System.Threading.Tasks;
 using Windows.UI.Core;
 using Processing;
+using System.Diagnostics;
 
 namespace RTGui
 {
     /// <summary>
     /// Chart page showing variations of Marginal Hilbert Spectrum for one channel in real time 
     /// </summary>
-    public sealed partial class ChartPage : Page
+    public sealed partial class RTAnalysisPage : Page
     {
-        private ChartPageViewModel _vm;
+        private RTAnalysisViewModel _vm;
 
-        public ChartPage()
+        public RTAnalysisPage()
         {
             this.InitializeComponent();
             _vm = null;
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            base.OnNavigatedFrom(e);
             if (_vm != null) {
-                DataManager.ChartPagesStates.AddOrUpdate(_vm.Channel, _vm, (channel, prevVm) => _vm);
                 DataManager.Current.SampleAnalysed -= OnSampleAnalysed;
+                DataManager.ChartPagesStates.AddOrUpdate(_vm.Channel, _vm, (channel, prevVm) => _vm);
                 _vm = null;
             }
+            base.OnNavigatedFrom(e);
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -51,7 +52,7 @@ namespace RTGui
             if (channel != null) {
                 DataManager.ChartPagesStates.TryRemove((int)channel, out _vm);
                 if (_vm == null)
-                    _vm = new ChartPageViewModel((int)channel);
+                    _vm = new RTAnalysisViewModel((int)channel);
 
                 DataContext = _vm;
                 DataManager.Current.SampleAnalysed += OnSampleAnalysed;
@@ -79,26 +80,43 @@ namespace RTGui
                 _vm.UpdateContent(maxFreq, minFreq, maxSpectrum, avgSpectrum, Dispatcher);
             }
         }
+        private void NextChannel_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_vm != null) {
+                Frame.Navigate(typeof(RTAnalysisPage), (_vm.Channel + 1) % 8);
+            }
+        }
+        private void PrevChannel_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_vm != null) {
+                Frame.Navigate(typeof(RTAnalysisPage), (_vm.Channel + 7) % 8);
+            }
+        }
     }
 
-    public class ChartPageViewModel : ViewModelBase
+    public class RTAnalysisViewModel : ViewModelBase
     {
-        public const int X_LENGTH = 20;
+        public const int X_LENGTH = 10;
         
         private readonly int _channel;
 
-        public ChartPageViewModel(int channel)
+        public RTAnalysisViewModel(int channel)
         {
             _channel = channel;
             MaxFreqValues = new ChartValues<ObservableValue>();
             MinFreqValues = new ChartValues<ObservableValue>();
             MaxSpectrumValues = new ChartValues<ObservableValue>();
             AvgSpectrumValues = new ChartValues<ObservableValue>();
-            Title = $"Channel {channel}";
+            Title = $"Channel {channel + 1}";
         }
         public async void UpdateContent(double maxFreq, double minFreq, double maxSpectrum, double avgSpectrum, CoreDispatcher uiDisp)
         {
             await uiDisp.RunAsync(CoreDispatcherPriority.Normal, () => {
+                MaxFreqText = $"Max inst frequency = {maxFreq}";
+                MinFreqText = $"Min inst frequency = {minFreq}";
+                MaxSpectrumText = $"Max Hilbert spectrum = {maxSpectrum}";
+                AvgSpectrumText = $"Avg Hilbert spectrum = {avgSpectrum}";
+
                 MaxFreqValues.Add(new ObservableValue(maxFreq));
                 if (MaxFreqValues.Count > X_LENGTH)
                     MaxFreqValues.RemoveAt(0);
@@ -114,16 +132,18 @@ namespace RTGui
                 AvgSpectrumValues.Add(new ObservableValue(avgSpectrum));
                 if (AvgSpectrumValues.Count > X_LENGTH)
                     AvgSpectrumValues.RemoveAt(0);
-
-                MaxFreqText = $"Max inst frequency = {maxFreq}";
-                MinFreqText = $"Min inst frequency = {minFreq}";
-                MaxSpectrumText = $"Max Hilbert spectrum = {maxSpectrum}";
-                AvgSpectrumText = $"Avg Hilbert spectrum = {avgSpectrum}";
             });
         }
 
         public int Channel
         { get => _channel; }
+
+        public Func<double, string> YLabelFormatter
+        {
+            get {
+                return (value) => value.ToString(/*"#.000"*/);
+            }
+        }
 
         public ChartValues<ObservableValue> MaxFreqValues
         { get; }
