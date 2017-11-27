@@ -17,6 +17,7 @@
 #include <memory>
 #include <complex>
 #include <cmath>
+#include <type_traits>
 #include "ISpectralAnalysis.h"
 #include "IHilbertSpectrum.h"
 

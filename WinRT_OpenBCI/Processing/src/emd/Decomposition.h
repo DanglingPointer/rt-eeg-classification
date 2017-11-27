@@ -20,6 +20,7 @@
 #include <random>
 #include <algorithm>
 #include <memory>
+#include <type_traits>
 #include "IImfDecomposition.h"
 
 using namespace Platform;

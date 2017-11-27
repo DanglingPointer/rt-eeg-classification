@@ -49,9 +49,11 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)$(MSBuildProjectName)\out\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(SolutionDir)$(MSBuildProjectName)\out\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -69,6 +71,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\hsa;$(ProjectDir)src\emd;$(ProjectDir)src;$(ProjectDir)src\ai;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,6 +98,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\hsa;$(ProjectDir)src\emd;$(ProjectDir)src;$(ProjectDir)src\ai;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,22 +107,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Analysis.h" />
-    <ClInclude Include="Decomposition.h" />
-    <ClInclude Include="Hsa.h" />
-    <ClInclude Include="IHilbertSpectrum.h" />
-    <ClInclude Include="IImfDecomposition.h" />
-    <ClInclude Include="ISpectralAnalysis.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Emd.h" />
+    <ClInclude Include="src\ai\Dtc.h" />
+    <ClInclude Include="src\ai\Classifier.h" />
+    <ClInclude Include="src\hsa\Analysis.h" />
+    <ClInclude Include="src\emd\Decomposition.h" />
+    <ClInclude Include="src\hsa\Hsa.h" />
+    <ClInclude Include="src\hsa\IHilbertSpectrum.h" />
+    <ClInclude Include="src\emd\IImfDecomposition.h" />
+    <ClInclude Include="src\hsa\ISpectralAnalysis.h" />
+    <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\emd\Emd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Hsa.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="src\ai\Dtc.cpp" />
+    <ClCompile Include="src\hsa\Hsa.cpp" />
+    <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Emd.cpp" />
+    <ClCompile Include="src\emd\Emd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
