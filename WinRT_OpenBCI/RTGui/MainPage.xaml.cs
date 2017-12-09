@@ -29,6 +29,7 @@ namespace RTGui
         public MainPage()
         {
             this.InitializeComponent();
+            txtInfo.Text = "Welcome to RT Classifier!\n";
         }
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
@@ -58,7 +59,7 @@ namespace RTGui
                 };
                 _serial.OpenPort();
 
-                txtStatus.Text = "Serial port opened";
+                txtInfo.Text += "Serial port opened\n";
             });
         }
         private async void Reset_OnClick(object sender, RoutedEventArgs e)
@@ -67,7 +68,7 @@ namespace RTGui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.RESET));
-                txtStatus.Text = "Device reset";
+                txtInfo.Text += "Device reset\n";
                 txtInfo.Text = "";
                 DataManager.Current.Stop();
             });
@@ -78,7 +79,7 @@ namespace RTGui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.START_STREAM));
-                txtStatus.Text = "Streaming started";
+                txtInfo.Text += "Streaming started\n";
                 DataManager.Current.Start();
             });
         }
@@ -88,7 +89,7 @@ namespace RTGui
                 if (_serial == null)
                     throw new InvalidOperationException("Not connected");
                 await _serial.SendCommandAsync(BciCommand.Simple(BciCommand.General.STOP_STREAM));
-                txtStatus.Text = "Streaming stopped";
+                txtInfo.Text += "Streaming stopped\n";
                 DataManager.Current.Stop();
             });
         }
@@ -116,6 +117,7 @@ namespace RTGui
                 await operation();
             }
             catch (Exception e) {
+                txtInfo.Text += $"{e.Message}\n";
                 var dialog = new MessageDialog(e.Message);
                 await dialog.ShowAsync();
             }
@@ -126,6 +128,7 @@ namespace RTGui
                 operation();
             }
             catch (Exception e) {
+                txtInfo.Text += $"{e.Message}\n";
                 var dialog = new MessageDialog(e.Message);
                 await dialog.ShowAsync();
             }

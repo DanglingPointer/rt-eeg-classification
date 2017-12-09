@@ -203,15 +203,7 @@ namespace RTGui
             for (int i = 0; i < data.Length; ++i) {
                 dataValues.Add(data[i]);
             }
-            _dataSeries = new SeriesCollection {
-                new LineSeries {
-                    Title = _chartName,
-                    Values = dataValues,
-                    PointGeometry = DefaultGeometries.None,
-                    StrokeThickness = 0.5,
-                    Stroke = new SolidColorBrush(Colors.Red)
-                }
-            };
+            _dataSeries = CreateSeriesCollection(_chartName, dataValues);
             OnPropertyChanged(nameof(DataSeries));
 
             var ampValues = new ChartValues<double>();
@@ -219,15 +211,7 @@ namespace RTGui
             for (int i = 0; i < amplitudes.Length; i += 2) {
                 ampValues.Add(amplitudes[i]);
             }
-            _amplitudes = new SeriesCollection {
-                new LineSeries {
-                    Title = "Instantaneous amplitudes",
-                    Values = ampValues,
-                    PointGeometry = DefaultGeometries.None,
-                    StrokeThickness = 0.5,
-                    Stroke = new SolidColorBrush(Colors.Red)
-                }
-            };
+            _amplitudes = CreateSeriesCollection("Instantaneous amplitudes", ampValues);
             OnPropertyChanged(nameof(Amplitudes));
 
             var phasValues = new ChartValues<double>();
@@ -235,15 +219,7 @@ namespace RTGui
             for (int i = 0; i < phases.Length; i += 2) {
                 phasValues.Add(phases[i]);
             }
-            _phases = new SeriesCollection {
-                new LineSeries {
-                    Title = "Instantaneous phases",
-                    Values = phasValues,
-                    PointGeometry = DefaultGeometries.None,
-                    StrokeThickness = 0.5,
-                    Stroke = new SolidColorBrush(Colors.Red)
-                }
-            };
+            _phases = CreateSeriesCollection("Instantaneous phases", phasValues);
             OnPropertyChanged(nameof(Phases));
 
             var freqValues = new ChartValues<double>();
@@ -251,16 +227,21 @@ namespace RTGui
             for (int i = 0; i < frequencies.Length; i += 2) {
                 freqValues.Add(frequencies[i]);
             }
-            _frequencies = new SeriesCollection {
+            _frequencies = CreateSeriesCollection("Instantaneous frequencies", freqValues);
+            OnPropertyChanged(nameof(Frequencies));
+        }
+        private static SeriesCollection CreateSeriesCollection(string title, IChartValues values)
+        {
+            return new SeriesCollection {
                 new LineSeries {
-                    Title = "Instantaneous frequencies",
-                    Values = freqValues,
+                    Title = title,
+                    Values = values,
                     PointGeometry = DefaultGeometries.None,
                     StrokeThickness = 0.5,
-                    Stroke = new SolidColorBrush(Colors.Red)
+                    Stroke = new SolidColorBrush(Colors.Red),
+                    Fill = new SolidColorBrush(Colors.Transparent)
                 }
             };
-            OnPropertyChanged(nameof(Frequencies));
         }
     }
 }

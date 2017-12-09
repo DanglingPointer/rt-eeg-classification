@@ -137,7 +137,8 @@ namespace RTGui
                         Values = ydata,
                         PointGeometry = DefaultGeometries.None,
                         StrokeThickness = 0.5,
-                        Stroke = new SolidColorBrush(Colors.Red)
+                        Stroke = new SolidColorBrush(Colors.Red),
+                        Fill = new SolidColorBrush(Colors.Transparent)
                     }
                 };
                 ChartTitles[channel] = $"Channel {channel + 1}";

@@ -21,6 +21,12 @@ using System.Threading.Tasks;
 using Windows.UI.Core;
 using Processing;
 using System.Diagnostics;
+using Telerik.UI.Xaml.Controls.Chart;
+using Windows.UI.Composition;
+using System.Collections.ObjectModel;
+using Telerik.Charting;
+using System.Numerics;
+using System.Collections.Specialized;
 
 namespace RTGui
 {
@@ -94,19 +100,34 @@ namespace RTGui
         }
     }
 
+    public class ObservableList<T> : List<T>, INotifyCollectionChanged
+    {
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public void NotifyCollectionReset()
+        {
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+    }
+    public class Point
+    {
+        public Point(double x, double y) { XValue = x; YValue = y; }
+        public double XValue { get; set; }
+        public double YValue { get; set; }
+    }
+
     public class RTAnalysisViewModel : ViewModelBase
     {
-        public const int X_LENGTH = 10;
+        public const int X_MAX_LENGTH = 10;
         
         private readonly int _channel;
 
         public RTAnalysisViewModel(int channel)
         {
             _channel = channel;
-            MaxFreqValues = new ChartValues<ObservableValue>();
-            MinFreqValues = new ChartValues<ObservableValue>();
-            MaxSpectrumValues = new ChartValues<ObservableValue>();
-            AvgSpectrumValues = new ChartValues<ObservableValue>();
+            MaxFreqValues = new ObservableList<Point>();
+            MinFreqValues = new ObservableList<Point>();
+            MaxSpectrumValues = new ObservableList<Point>();
+            AvgSpectrumValues = new ObservableList<Point>();
             Title = $"Channel {channel + 1}";
         }
         public async void UpdateContent(double maxFreq, double minFreq, double maxSpectrum, double avgSpectrum, CoreDispatcher uiDisp)
@@ -116,43 +137,40 @@ namespace RTGui
                 MinFreqText = $"Min inst frequency = {minFreq}";
                 MaxSpectrumText = $"Max Hilbert spectrum = {maxSpectrum}";
                 AvgSpectrumText = $"Avg Hilbert spectrum = {avgSpectrum}";
+                
+                AppendDataSeries(MaxFreqValues, maxFreq);
+                AppendDataSeries(MinFreqValues, minFreq);
 
-                MaxFreqValues.Add(new ObservableValue(maxFreq));
-                if (MaxFreqValues.Count > X_LENGTH)
-                    MaxFreqValues.RemoveAt(0);
-
-                MinFreqValues.Add(new ObservableValue(minFreq));
-                if (MinFreqValues.Count > X_LENGTH)
-                    MinFreqValues.RemoveAt(0);
-
-                MaxSpectrumValues.Add(new ObservableValue(maxSpectrum));
-                if (MaxSpectrumValues.Count > X_LENGTH)
-                    MaxSpectrumValues.RemoveAt(0);
-
-                AvgSpectrumValues.Add(new ObservableValue(avgSpectrum));
-                if (AvgSpectrumValues.Count > X_LENGTH)
-                    AvgSpectrumValues.RemoveAt(0);
+                AppendDataSeries(AvgSpectrumValues, avgSpectrum);
+                AppendDataSeries(MaxSpectrumValues, maxSpectrum);
             });
         }
+        private static void AppendDataSeries(ObservableList<Point> series, double newValue)
+        {
+            if (series.Count > X_MAX_LENGTH) {
+                series.RemoveAt(0);
+                foreach (Point p in series)
+                    p.XValue--;
+            }
+            series.Add(new Point(series.Count, newValue));
+            series.NotifyCollectionReset();
+        }
+
+        public ObservableList<Point> MaxFreqValues
+        { get; }
+        public ObservableList<Point> MinFreqValues
+        { get; }
+        public ObservableList<Point> MaxSpectrumValues
+        { get; }
+        public ObservableList<Point> AvgSpectrumValues
+        { get; }
 
         public int Channel
         { get => _channel; }
-
-        public Func<double, string> YLabelFormatter
+        public double MaxXValue
         {
-            get {
-                return (value) => value.ToString(/*"#.000"*/);
-            }
+            get => X_MAX_LENGTH;
         }
-
-        public ChartValues<ObservableValue> MaxFreqValues
-        { get; }
-        public ChartValues<ObservableValue> MinFreqValues
-        { get; }
-        public ChartValues<ObservableValue> MaxSpectrumValues
-        { get; }
-        public ChartValues<ObservableValue> AvgSpectrumValues
-        { get; }
 
         private string _title;
         public string Title

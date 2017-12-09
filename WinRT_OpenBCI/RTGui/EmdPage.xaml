@@ -8,6 +8,16 @@
     xmlns:lvc="using:LiveCharts.Uwp"
     mc:Ignorable="d">
 
+    <!--<Page.Resources>
+        <Style TargetType="lvc:LineSeries">
+            <Setter Property="PointGeometrySize" Value="0" />
+            <Setter Property="Fill" Value="Transparent" />
+            <Setter Property="LineSmoothness" Value="0" />
+            <Setter Property="PointGeometry" Value="{x:Null}" />
+            <Setter Property="StrokeThickness" Value="0.5" />
+        </Style>        
+    </Page.Resources>-->
+
 
     <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
