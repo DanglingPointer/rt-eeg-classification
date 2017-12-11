@@ -239,10 +239,11 @@ namespace Processing
                this->m_pInstAmpl[i] = std::sqrt(hilberted[i].real() * hilberted[i].real() + hilberted[i].imag() * hilberted[i].imag());            
          };
          auto fillPhasFreqTask = [&hilberted, this, timeStep]() {
+            TData invTimestep = 1.0 / timeStep;
             this->m_pInstPhas[0] = std::atan2(hilberted[0].imag(), hilberted[0].real());
             for (int i = 1; i < m_length; ++i) {
                this->m_pInstPhas[i] = std::atan2(hilberted[i].imag(), hilberted[i].real());
-               this->m_pInstFreq[i - 1] = (m_pInstPhas[i] - m_pInstPhas[i - 1]) / timeStep;
+               this->m_pInstFreq[i - 1] = (m_pInstPhas[i] - m_pInstPhas[i - 1]) * invTimestep;
             }
          };
 

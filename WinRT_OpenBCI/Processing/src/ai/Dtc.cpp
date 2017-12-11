@@ -27,4 +27,7 @@ void Dtc::Foo()
    ContAttribute<double> attr(42.0, pvec, [](double id) { return id + id; });
 
    TreeNode<ContAttribute<double>> node(std::shared_ptr<ContAttribute<double>>(&attr));
+
+   FixedSizeNetwork<double> nn(31, 32, 3, 2);
+   nn.ComputeOutputs(NULL, NULL);
 }

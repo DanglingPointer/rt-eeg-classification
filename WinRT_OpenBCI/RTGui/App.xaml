@@ -12,13 +12,17 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="FontSize" Value="12" />            
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Black" />
         </Style>
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Margin" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Black" />
         </Style>
     </Application.Resources>
     

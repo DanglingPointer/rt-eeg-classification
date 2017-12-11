@@ -117,7 +117,7 @@ namespace RTGui
                 await operation();
             }
             catch (Exception e) {
-                txtInfo.Text += $"{e.Message}\n";
+                txtInfo.Text += $"Error: {e.Message}\n";
                 var dialog = new MessageDialog(e.Message);
                 await dialog.ShowAsync();
             }
@@ -128,7 +128,7 @@ namespace RTGui
                 operation();
             }
             catch (Exception e) {
-                txtInfo.Text += $"{e.Message}\n";
+                txtInfo.Text += $"Error: {e.Message}\n";
                 var dialog = new MessageDialog(e.Message);
                 await dialog.ShowAsync();
             }
