@@ -10,7 +10,7 @@
     <ClCompile Include="src\pch.cpp" />
     <ClCompile Include="src\emd\Emd.cpp" />
     <ClCompile Include="src\hsa\Hsa.cpp" />
-    <ClCompile Include="src\ai\Dtc.cpp" />
+    <ClCompile Include="src\ai\Classifier.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\pch.h" />
@@ -21,7 +21,8 @@
     <ClInclude Include="src\emd\IImfDecomposition.h" />
     <ClInclude Include="src\hsa\ISpectralAnalysis.h" />
     <ClInclude Include="src\hsa\IHilbertSpectrum.h" />
+    <ClInclude Include="src\ai\Learning.h" />
     <ClInclude Include="src\ai\Classifier.h" />
-    <ClInclude Include="src\ai\Dtc.h" />
+    <ClInclude Include="src\ai\DecisionTree.h" />
   </ItemGroup>
 </Project>

@@ -17,17 +17,50 @@
 using namespace Windows::Foundation;
 using namespace Platform;
 
+using namespace Platform;
+
 namespace Processing
 {
+   template<typename TData>
+   ref class Classifier;
+
    /// <summary>
-   /// Decision tree classifier
+   /// Single-precision classifier using Artificial Neural Networks
    /// </summary>
-   public ref class Classifier sealed
+   public ref class ClassifierSingle sealed
    {
+      Classifier<float>^ m_pclas;
 
    public:
-      Classifier();
-      void Foo();
+      ClassifierSingle();
+
+      void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
+
+      void AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput);
+
+      void Train();
+
+      void Classify(const Array<float>^ data, WriteOnlyArray<float>^ output);
+   };
+
+
+   /// <summary>
+   /// Double-precision classifier using Artificial Neural Networks
+   /// </summary>
+   public ref class ClassifierDouble sealed
+   {
+      Classifier<double>^ m_pclas;
+
+   public:
+      ClassifierDouble();
+
+      void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
+
+      void AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput);
+
+      void Train();
+
+      void Classify(const Array<double>^ data, WriteOnlyArray<double>^ output);
    };
 }
 

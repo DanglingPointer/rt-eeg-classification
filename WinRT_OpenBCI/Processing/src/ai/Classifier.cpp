@@ -14,31 +14,55 @@
 *    limitations under the License.
 */
 #include "pch.h"
-#include "Learning.h"
 #include "Classifier.h"
+#include "Learning.h"
 
 using namespace Processing;
 using namespace Platform;
 
-Processing::Classifier::Classifier()
+ClassifierSingle::ClassifierSingle() : m_pclas(ref new Classifier<float>())
+{ }
+
+void ClassifierSingle::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
-   throw ref new Platform::NotImplementedException();
+   m_pclas->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
 }
 
-void Classifier::Foo()
+void ClassifierSingle::AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput)
 {
-   //auto pvec = std::make_shared<std::vector<double>>();
+   m_pclas->AddExample(trainingInput, trainingOutput);
+}
 
-   //ContAttribute<double> attr(42.0, pvec, [](double id) { return id + id; });
+void ClassifierSingle::Train()
+{
+   m_pclas->Train();
+}
 
-   //TreeNode<ContAttribute<double>> node(std::shared_ptr<ContAttribute<double>>(&attr));
+void ClassifierSingle::Classify(const Array<float>^ data, WriteOnlyArray<float>^ output)
+{
+   m_pclas->Classify(data, output);
+}
 
-   auto WeightFactory = [](size_t fanIn) { return fanIn / 4.0; };
-   FixedSizeNetwork<float> nn(31, 32, 3, 2);
-   nn.ComputeOutputs(NULL, NULL);
 
-   auto pnn = std::make_unique<FixedSizeNetwork<float>>(31, 31, 31, 31);
+ClassifierDouble::ClassifierDouble() : m_pclas(ref new Classifier<double>())
+{ }
 
-   Trainer<FixedSizeNetwork<float>> t(std::move(pnn));
-   t.Train(std::vector<std::vector<float>>(), std::vector<std::vector<float>>());
+void ClassifierDouble::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
+{
+   m_pclas->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
+}
+
+void ClassifierDouble::AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput)
+{
+   m_pclas->AddExample(trainingInput, trainingOutput);
+}
+
+void ClassifierDouble::Train()
+{
+   m_pclas->Train();
+}
+
+void ClassifierDouble::Classify(const Array<double>^ data, WriteOnlyArray<double>^ output)
+{
+   m_pclas->Classify(data, output);
 }

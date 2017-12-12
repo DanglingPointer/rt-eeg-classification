@@ -29,6 +29,9 @@ using namespace Windows::Foundation::Collections;
  #define M_PI 3.14159265358979323846
 #endif
 
+#ifdef REQUIRES_FLOAT
+#undef REQUIRES_FLOAT
+#endif
 #define REQUIRES_FLOAT(T) typename = std::enable_if_t<std::is_floating_point_v<T>>
 #define REQUIRES_INT(T) typename = std::enable_if_t<std::is_integral_v<T>>
 

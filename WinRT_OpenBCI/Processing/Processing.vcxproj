@@ -107,8 +107,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\ai\Dtc.h" />
     <ClInclude Include="src\ai\Classifier.h" />
+    <ClInclude Include="src\ai\DecisionTree.h" />
+    <ClInclude Include="src\ai\Learning.h" />
     <ClInclude Include="src\hsa\Analysis.h" />
     <ClInclude Include="src\emd\Decomposition.h" />
     <ClInclude Include="src\hsa\Hsa.h" />
@@ -119,7 +120,7 @@
     <ClInclude Include="src\emd\Emd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ai\Dtc.cpp" />
+    <ClCompile Include="src\ai\Classifier.cpp" />
     <ClCompile Include="src\hsa\Hsa.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

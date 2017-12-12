@@ -27,6 +27,9 @@ using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
 
+#ifdef REQUIRES_FLOAT
+#undef REQUIRES_FLOAT
+#endif
 #define REQUIRES_FLOAT(T) typename = std::enable_if_t<std::is_floating_point_v<T>>
 
 namespace Processing
