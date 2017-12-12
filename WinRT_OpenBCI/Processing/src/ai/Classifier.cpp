@@ -14,20 +14,31 @@
 *    limitations under the License.
 */
 #include "pch.h"
+#include "Learning.h"
 #include "Classifier.h"
-#include "Dtc.h"
 
 using namespace Processing;
 using namespace Platform;
 
-void Dtc::Foo()
+Processing::Classifier::Classifier()
 {
-   auto pvec = std::make_shared<std::vector<double>>();
+   throw ref new Platform::NotImplementedException();
+}
 
-   ContAttribute<double> attr(42.0, pvec, [](double id) { return id + id; });
+void Classifier::Foo()
+{
+   //auto pvec = std::make_shared<std::vector<double>>();
 
-   TreeNode<ContAttribute<double>> node(std::shared_ptr<ContAttribute<double>>(&attr));
+   //ContAttribute<double> attr(42.0, pvec, [](double id) { return id + id; });
 
-   FixedSizeNetwork<double> nn(31, 32, 3, 2);
+   //TreeNode<ContAttribute<double>> node(std::shared_ptr<ContAttribute<double>>(&attr));
+
+   auto WeightFactory = [](size_t fanIn) { return fanIn / 4.0; };
+   FixedSizeNetwork<float> nn(31, 32, 3, 2);
    nn.ComputeOutputs(NULL, NULL);
+
+   auto pnn = std::make_unique<FixedSizeNetwork<float>>(31, 31, 31, 31);
+
+   Trainer<FixedSizeNetwork<float>> t(std::move(pnn));
+   t.Train(std::vector<std::vector<float>>(), std::vector<std::vector<float>>());
 }
