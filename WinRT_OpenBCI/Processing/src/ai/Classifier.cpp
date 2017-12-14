@@ -20,49 +20,49 @@
 using namespace Processing;
 using namespace Platform;
 
-ClassifierSingle::ClassifierSingle() : m_pclas(ref new Classifier<float>())
+ClassifierSingle::ClassifierSingle() : m_pc(ref new Classifier<float>())
 { }
 
 void ClassifierSingle::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
-   m_pclas->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
+   m_pc->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
 }
 
 void ClassifierSingle::AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput)
 {
-   m_pclas->AddExample(trainingInput, trainingOutput);
+   m_pc->AddExample(trainingInput, trainingOutput);
 }
 
 void ClassifierSingle::Train()
 {
-   m_pclas->Train();
+   m_pc->Train();
 }
 
 void ClassifierSingle::Classify(const Array<float>^ data, WriteOnlyArray<float>^ output)
 {
-   m_pclas->Classify(data, output);
+   m_pc->Classify(data, output);
 }
 
 
-ClassifierDouble::ClassifierDouble() : m_pclas(ref new Classifier<double>())
+ClassifierDouble::ClassifierDouble() : m_pc(ref new Classifier<double>())
 { }
 
 void ClassifierDouble::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
-   m_pclas->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
+   m_pc->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
 }
 
 void ClassifierDouble::AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput)
 {
-   m_pclas->AddExample(trainingInput, trainingOutput);
+   m_pc->AddExample(trainingInput, trainingOutput);
 }
 
 void ClassifierDouble::Train()
 {
-   m_pclas->Train();
+   m_pc->Train();
 }
 
 void ClassifierDouble::Classify(const Array<double>^ data, WriteOnlyArray<double>^ output)
 {
-   m_pclas->Classify(data, output);
+   m_pc->Classify(data, output);
 }

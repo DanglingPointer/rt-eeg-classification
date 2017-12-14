@@ -358,7 +358,7 @@ namespace Processing
          m_pdeltas(std::make_unique<val_t[]>(m_pnet->GetNodesCount() + m_pnet->GetLayerCount()))
       { }
       template <typename TPtr>
-      Trainer(TPtr&& network) : Trainer(std::forward<TPtr>(network), [](int t) { return 100.0 / (100.0 + t); })
+      explicit Trainer(TPtr&& network) : Trainer(std::forward<TPtr>(network), [](int t) { return 100.0 / (100.0 + t); })
       { }
       std::shared_ptr<INetwork<val_t>> GetNetwork() const noexcept
       {
@@ -500,7 +500,7 @@ namespace Processing
 
 #pragma region C++/CX classes
 
-   template<typename TData>
+   template <typename TData>
    private ref class Classifier
    {
       REQUIRES_FLOAT(TData);
@@ -515,7 +515,7 @@ namespace Processing
       { }
       void CreateFixedSizeNetwork(int32 inN, int32 N, int32 outN, int32 L)
       {
-         m_pNetwork = std::make_unique<FixedSizeNetwork<TData>>(inN, N, outN, L, BottouWeightFactory<TData>);
+         m_pNetwork = std::make_unique<FixedSizeNetwork<TData>>(inN, N, outN, L, &BottouWeightFactory<TData>);
       }
       void AddExample(const Array<TData>^ input, const Array<TData>^ output)
       {
@@ -538,7 +538,9 @@ namespace Processing
       }
       void Classify(const Array<TData>^ data, WriteOnlyArray<TData>^ output)
       {
-         m_pNetwork->ComputeOutputs(data->Data, output->Data);
+         std::vector<TData> norm(begin(data), end(data));
+         Normalize(norm);
+         m_pNetwork->ComputeOutputs(norm.data(), output->Data);
       }
 
    private:

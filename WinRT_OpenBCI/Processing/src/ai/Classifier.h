@@ -29,7 +29,7 @@ namespace Processing
    /// </summary>
    public ref class ClassifierSingle sealed
    {
-      Classifier<float>^ m_pclas;
+      Classifier<float>^ m_pc;
 
    public:
       ClassifierSingle();
@@ -43,13 +43,12 @@ namespace Processing
       void Classify(const Array<float>^ data, WriteOnlyArray<float>^ output);
    };
 
-
    /// <summary>
    /// Double-precision classifier using Artificial Neural Networks
    /// </summary>
    public ref class ClassifierDouble sealed
    {
-      Classifier<double>^ m_pclas;
+      Classifier<double>^ m_pc;
 
    public:
       ClassifierDouble();
