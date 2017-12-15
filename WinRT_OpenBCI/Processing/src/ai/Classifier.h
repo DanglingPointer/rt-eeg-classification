@@ -36,6 +36,8 @@ namespace Processing
 
       void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
 
+      void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
+
       void AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput);
 
       void Train();
@@ -54,6 +56,8 @@ namespace Processing
       ClassifierDouble();
 
       void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
+
+      void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
 
       void AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput);
 

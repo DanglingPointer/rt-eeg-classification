@@ -25,7 +25,12 @@ ClassifierSingle::ClassifierSingle() : m_pc(ref new Classifier<float>())
 
 void ClassifierSingle::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
-   m_pc->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
+   m_pc->CreateBPNetwork(inputSize, layerSize, outputSize, layerCount);
+}
+
+void ClassifierSingle::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
+{
+   m_pc->CreateCCNetwork(inputSize, outputSize);
 }
 
 void ClassifierSingle::AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput)
@@ -49,7 +54,12 @@ ClassifierDouble::ClassifierDouble() : m_pc(ref new Classifier<double>())
 
 void ClassifierDouble::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
-   m_pc->CreateFixedSizeNetwork(inputSize, layerSize, outputSize, layerCount);
+   m_pc->CreateBPNetwork(inputSize, layerSize, outputSize, layerCount);
+}
+
+void ClassifierDouble::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
+{
+   m_pc->CreateCCNetwork(inputSize, outputSize);
 }
 
 void ClassifierDouble::AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput)
