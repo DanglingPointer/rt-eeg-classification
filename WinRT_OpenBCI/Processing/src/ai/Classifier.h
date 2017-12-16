@@ -17,53 +17,58 @@
 using namespace Windows::Foundation;
 using namespace Platform;
 
-using namespace Platform;
-
 namespace Processing
 {
    template<typename TData>
    ref class Classifier;
 
-   /// <summary>
-   /// Single-precision classifier using Artificial Neural Networks
-   /// </summary>
-   public ref class ClassifierSingle sealed
+   namespace Single
    {
-      Classifier<float>^ m_pc;
+      /// <summary>
+      /// Single-precision classifier using Artificial Neural Networks
+      /// </summary>
+      public ref class Classifier sealed
+      {
+         Processing::Classifier<float>^ m_pc;
 
-   public:
-      ClassifierSingle();
+      public:
+         Classifier();
 
-      void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
+         void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
 
-      void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
+         void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
 
-      void AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput);
+         void AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput);
 
-      void Train();
+         IAsyncAction^ TrainAsync();
 
-      void Classify(const Array<float>^ data, WriteOnlyArray<float>^ output);
-   };
+         IAsyncAction^ ClassifyAsync(const Array<float>^ data, WriteOnlyArray<float>^ output);
+      };
+   }
 
-   /// <summary>
-   /// Double-precision classifier using Artificial Neural Networks
-   /// </summary>
-   public ref class ClassifierDouble sealed
+   namespace Double
    {
-      Classifier<double>^ m_pc;
+      /// <summary>
+      /// Double-precision classifier using Artificial Neural Networks
+      /// </summary>
+      public ref class Classifier sealed
+      {
+         Processing::Classifier<double>^ m_pc;
 
-   public:
-      ClassifierDouble();
+      public:
+         Classifier();
 
-      void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
+         void CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount);
 
-      void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
+         void CreateCascadeNetwork(int32 inputSize, int32 outputSize);
 
-      void AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput);
+         void AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput);
 
-      void Train();
+         IAsyncAction^ TrainAsync();
 
-      void Classify(const Array<double>^ data, WriteOnlyArray<double>^ output);
-   };
+         IAsyncAction^ ClassifyAsync(const Array<double>^ data, WriteOnlyArray<double>^ output);
+      };
+   }
+
 }
 

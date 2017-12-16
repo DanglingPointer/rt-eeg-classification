@@ -19,7 +19,7 @@ using LiveCharts.Uwp;
 using LiveCharts.Defaults;
 using System.Threading.Tasks;
 using Windows.UI.Core;
-using Processing;
+using Processing.Double;
 using System.Diagnostics;
 using Telerik.UI.Xaml.Controls.Chart;
 using Windows.UI.Composition;
@@ -64,7 +64,7 @@ namespace RTGui
                 DataManager.Current.SampleAnalysed += OnSampleAnalysed;
             }
         }
-        private void OnSampleAnalysed(IHilbertSpectrumDouble spectrum, int channel)
+        private void OnSampleAnalysed(IHilbertSpectrum spectrum, int channel)
         {
             if (_vm != null && channel == _vm.Channel) {
                 double maxFreq = spectrum.MaxFrequency;

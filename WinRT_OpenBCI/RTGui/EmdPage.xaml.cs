@@ -2,6 +2,7 @@
 using LiveCharts;
 using LiveCharts.Uwp;
 using Processing;
+using Processing.Double;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -76,7 +77,7 @@ namespace RTGui
         private int _chartIndex;
         private string _chartName;
         private double[] _channelData;
-        private IImfDecompositionDouble _decomp;
+        private IImfDecomposition _decomp;
 
         public EmdViewModel(int channelNo)
         {

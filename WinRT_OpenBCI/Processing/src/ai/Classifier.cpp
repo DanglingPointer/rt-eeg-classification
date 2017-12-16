@@ -17,62 +17,61 @@
 #include "Classifier.h"
 #include "Learning.h"
 
-using namespace Processing;
 using namespace Platform;
 
-ClassifierSingle::ClassifierSingle() : m_pc(ref new Classifier<float>())
+Processing::Single::Classifier::Classifier() : m_pc(ref new Processing::Classifier<float>())
 { }
 
-void ClassifierSingle::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
+void Processing::Single::Classifier::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
    m_pc->CreateBPNetwork(inputSize, layerSize, outputSize, layerCount);
 }
 
-void ClassifierSingle::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
+void Processing::Single::Classifier::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
 {
    m_pc->CreateCCNetwork(inputSize, outputSize);
 }
 
-void ClassifierSingle::AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput)
+void Processing::Single::Classifier::AddExample(const Array<float>^ trainingInput, const Array<float>^ trainingOutput)
 {
    m_pc->AddExample(trainingInput, trainingOutput);
 }
 
-void ClassifierSingle::Train()
+IAsyncAction^ Processing::Single::Classifier::TrainAsync()
 {
-   m_pc->Train();
+   return concurrency::create_async([this]() { m_pc->Train(); });   
 }
 
-void ClassifierSingle::Classify(const Array<float>^ data, WriteOnlyArray<float>^ output)
+IAsyncAction^ Processing::Single::Classifier::ClassifyAsync(const Array<float>^ data, WriteOnlyArray<float>^ output)
 {
-   m_pc->Classify(data, output);
+   return concurrency::create_async([=]() { m_pc->Classify(data, output);; });   
 }
 
 
-ClassifierDouble::ClassifierDouble() : m_pc(ref new Classifier<double>())
+Processing::Double::Classifier::Classifier() : m_pc(ref new Processing::Classifier<double>())
 { }
 
-void ClassifierDouble::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
+void Processing::Double::Classifier::CreateFixedSizeNetwork(int32 inputSize, int32 layerSize, int32 outputSize, int32 layerCount)
 {
    m_pc->CreateBPNetwork(inputSize, layerSize, outputSize, layerCount);
 }
 
-void ClassifierDouble::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
+void Processing::Double::Classifier::CreateCascadeNetwork(int32 inputSize, int32 outputSize)
 {
    m_pc->CreateCCNetwork(inputSize, outputSize);
 }
 
-void ClassifierDouble::AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput)
+void Processing::Double::Classifier::AddExample(const Array<double>^ trainingInput, const Array<double>^ trainingOutput)
 {
    m_pc->AddExample(trainingInput, trainingOutput);
 }
 
-void ClassifierDouble::Train()
+IAsyncAction^ Processing::Double::Classifier::TrainAsync()
 {
-   m_pc->Train();
+   return concurrency::create_async([this]() { m_pc->Train(); });
 }
 
-void ClassifierDouble::Classify(const Array<double>^ data, WriteOnlyArray<double>^ output)
+IAsyncAction^ Processing::Double::Classifier::ClassifyAsync(const Array<double>^ data, WriteOnlyArray<double>^ output)
 {
-   m_pc->Classify(data, output);
+   return concurrency::create_async([=]() { m_pc->Classify(data, output);; });
 }

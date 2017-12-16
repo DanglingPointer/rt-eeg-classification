@@ -1,0 +1,32 @@
+﻿<Page
+    x:Class="RTGui.ClassifierPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RTGui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Orientation="Vertical" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <TextBlock Text="Neural Network type:" Margin="10" />
+            <TextBlock Name="txtNetworkType" Margin="10" Text="N/A" />            
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <TextBlock Text="Action no:" Margin="10" />
+            <TextBlock Name="txtActionNo" Margin="10" Text="N/A" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <TextBlock Text="Action name:" Margin="10" />
+            <TextBox Name="txtActionName" Text="Action 1" Margin="10" MinWidth="200" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <Button Name="btnCollect" Content="Start collecting" Click="CollectButton_OnClick" MinWidth="200" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <Button Name="btnClassify" Content="Start classifying" Click="ClassifyButton_OnClick" MinWidth="200" />
+        </StackPanel>
+
+    </StackPanel>
+</Page>

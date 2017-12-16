@@ -23,14 +23,14 @@ using namespace Platform;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-IAsyncOperation<IImfDecompositionSingle^>^ Emd::DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, int maxImfCount)
+IAsyncOperation<Single::IImfDecomposition^>^ Emd::DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, int maxImfCount)
 {
    return concurrency::create_async([=]() {
-      return static_cast<IImfDecompositionSingle^>(ref new EmdDecomposer<float>(xValues, yValues, maxImfCount));
+      return static_cast<Single::IImfDecomposition^>(ref new EmdDecomposer<float>(xValues, yValues, maxImfCount));
    });
 }
 
-inline IAsyncOperation<IImfDecompositionSingle^>^ Emd::DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues)
+inline IAsyncOperation<Single::IImfDecomposition^>^ Emd::DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues)
 {
    return Emd::DecomposeAsync(xValues, yValues, INT_MAX);
 }
@@ -38,14 +38,14 @@ inline IAsyncOperation<IImfDecompositionSingle^>^ Emd::DecomposeAsync(const Arra
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 [Windows::Foundation::Metadata::DefaultOverloadAttribute()]
-IAsyncOperation<IImfDecompositionDouble^>^ Emd::DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount)
+IAsyncOperation<Double::IImfDecomposition^>^ Emd::DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount)
 {
    return concurrency::create_async([=]() {
-      return static_cast<IImfDecompositionDouble^>(ref new EmdDecomposer<double>(xValues, yValues, maxImfCount));
+      return static_cast<Double::IImfDecomposition^>(ref new EmdDecomposer<double>(xValues, yValues, maxImfCount));
    });
 }
 
-inline IAsyncOperation<IImfDecompositionDouble^>^ Emd::DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues)
+inline IAsyncOperation<Double::IImfDecomposition^>^ Emd::DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues)
 {
    return Emd::DecomposeAsync(xValues, yValues, INT_MAX);
 }
@@ -53,19 +53,19 @@ inline IAsyncOperation<IImfDecompositionDouble^>^ Emd::DecomposeAsync(const Arra
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-IAsyncOperation<IImfDecompositionSingle^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, float noiseSD, int ensembleCount)
+IAsyncOperation<Single::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, float noiseSD, int ensembleCount)
 {
    return concurrency::create_async([=]() {
-      return static_cast<IImfDecompositionSingle^>(ref new EemdDecomposer<float>(xValues, yValues, ensembleCount, noiseSD));
+      return static_cast<Single::IImfDecomposition^>(ref new EemdDecomposer<float>(xValues, yValues, ensembleCount, noiseSD));
    });
 }
 
-inline IAsyncOperation<IImfDecompositionSingle^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, float noiseSD)
+inline IAsyncOperation<Single::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, float noiseSD)
 {
    return Emd::EnsembleDecomposeAsync(xValues, yValues, noiseSD, 100);
 }
 
-inline IAsyncOperation<IImfDecompositionSingle^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues)
+inline IAsyncOperation<Single::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues)
 {
    return Emd::EnsembleDecomposeAsync(xValues, yValues, 1.0f);
 }
@@ -73,19 +73,19 @@ inline IAsyncOperation<IImfDecompositionSingle^>^ Emd::EnsembleDecomposeAsync(co
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 [Windows::Foundation::Metadata::DefaultOverloadAttribute()]
-IAsyncOperation<IImfDecompositionDouble^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, double noiseSD, int ensembleCount)
+IAsyncOperation<Double::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, double noiseSD, int ensembleCount)
 {
    return concurrency::create_async([=]() {
-      return static_cast<IImfDecompositionDouble^>(ref new EemdDecomposer<double>(xValues, yValues, ensembleCount, noiseSD));
+      return static_cast<Double::IImfDecomposition^>(ref new EemdDecomposer<double>(xValues, yValues, ensembleCount, noiseSD));
    });
 }
 
-inline IAsyncOperation<IImfDecompositionDouble^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, double noiseSD)
+inline IAsyncOperation<Double::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, double noiseSD)
 {
    return Emd::EnsembleDecomposeAsync(xValues, yValues, noiseSD, 100);
 }
 
-inline IAsyncOperation<IImfDecompositionDouble^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues)
+inline IAsyncOperation<Double::IImfDecomposition^>^ Emd::EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues)
 {
    return Emd::EnsembleDecomposeAsync(xValues, yValues, 1.0f);
 }

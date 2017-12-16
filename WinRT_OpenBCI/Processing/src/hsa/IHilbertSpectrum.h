@@ -17,26 +17,32 @@
 
 namespace Processing
 {
-   public interface class IHilbertSpectrumDouble
+   namespace Double
    {
-      property double MaxFrequency {
-         double get();
-      }
-      property double MinFrequency {
-         double get();
-      }
-      double ComputeAt(double t, double w);
-      double ComputeMarginalAt(double w);
-   };
-   public interface class IHilbertSpectrumSingle
+      public interface class IHilbertSpectrum
+      {
+         property double MaxFrequency {
+            double get();
+         }
+         property double MinFrequency {
+            double get();
+         }
+         double ComputeAt(double t, double w);
+         double ComputeMarginalAt(double w);
+      };
+   }
+   namespace Single
    {
-      property float MaxFrequency {
-         float get();
-      }
-      property float MinFrequency {
-         float get();
-      }
-      float ComputeAt(float t, float w);
-      float ComputeMarginalAt(float w);
-   };
+      public interface class IHilbertSpectrum
+      {
+         property float MaxFrequency {
+            float get();
+         }
+         property float MinFrequency {
+            float get();
+         }
+         float ComputeAt(float t, float w);
+         float ComputeMarginalAt(float w);
+      };
+   }
 }

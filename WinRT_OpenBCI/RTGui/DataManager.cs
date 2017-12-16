@@ -1,5 +1,6 @@
 ﻿using Communication;
 using Processing;
+using Processing.Double;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace RTGui
     {
         public static ConcurrentDictionary<int, RTAnalysisViewModel> ChartPagesStates
         { get; } = new ConcurrentDictionary<int, RTAnalysisViewModel>();
+        public static string[] ActionNames
+        { get; set; }
 
         public static DataManager Current
         { get; } = new DataManager();
@@ -21,7 +24,7 @@ namespace RTGui
         public const double ScaleFactor = 4.5d / 24.0d / 8388607.0d;
 
 
-        public event Action<IHilbertSpectrumDouble, int> SampleAnalysed;
+        public event Action<IHilbertSpectrum, int> SampleAnalysed;
 
         private int _sampleSize;
         private int _ensembleCount;
@@ -103,6 +106,8 @@ namespace RTGui
                 Debug.WriteLine("Sample enqueued");
             }
         }
+        public ClassifierAdapter Classifier
+        { get; set; }
         /// <summary>
         /// Copy of previous sample, might be used for static analysis
         /// </summary>

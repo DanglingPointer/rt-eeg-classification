@@ -110,6 +110,24 @@ namespace RTGui
                 frmContent.Navigate(typeof(ChannelDataPage));
             });
         }
+        private void StartBPClassifier_OnClick(object sender, RoutedEventArgs e)
+        {
+            PopupIfThrows(() => {
+                if (_serial == null || DataManager.Current.LastSample == null)
+                    throw new InvalidOperationException("Operation unavailable");
+                int modeCount = Int32.Parse(txtModeCount.Text);
+                frmContent.Navigate(typeof(ClassifierPage), modeCount);
+            });
+        }
+        private void StartCCClassifier_OnClick(object sender, RoutedEventArgs e)
+        {
+            PopupIfThrows(() => {
+                if (_serial == null || DataManager.Current.LastSample == null)
+                    throw new InvalidOperationException("Operation unavailable");
+                int modeCount = Int32.Parse(txtModeCount.Text) + 100;
+                frmContent.Navigate(typeof(ClassifierPage), modeCount);
+            });
+        }
         // --------------------------------------------------------------------------------------------------------------------
         private async Task PopupIfThrowsAsync(Func<Task> operation)
         {

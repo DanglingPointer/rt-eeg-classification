@@ -280,14 +280,14 @@ namespace Processing
    ref class SpectralAnalyzer;
 
    template <>
-   private ref class SpectralAnalyzer<double> : public SpectralAnalyzerBase<double>, public ISpectralAnalysisDouble
+   private ref class SpectralAnalyzer<double> : public SpectralAnalyzerBase<double>, public Double::ISpectralAnalysis
    {
    internal:
       SpectralAnalyzer(const Array<double>^ yValues, double timeStep) 
          : SpectralAnalyzerBase(yValues, timeStep)
       { }
    public:
-      // Inherited via ISpectralAnalysisDouble
+      // Inherited via ISpectralAnalysis
       virtual property Array<double>^ InstAmplitudes {
          Array<double>^ get()
          {
@@ -309,14 +309,14 @@ namespace Processing
    };
 
    template <>
-   private ref class SpectralAnalyzer<float> : public SpectralAnalyzerBase<float>, public ISpectralAnalysisSingle
+   private ref class SpectralAnalyzer<float> : public SpectralAnalyzerBase<float>, public Single::ISpectralAnalysis
    {
    internal:
       SpectralAnalyzer(const Array<float>^ yValues, float timeStep)
          : SpectralAnalyzerBase(yValues, timeStep)
       { }
    public:
-      // Inherited via ISpectralAnalysisSingle
+      // Inherited via ISpectralAnalysis
       virtual property Array<float>^ InstAmplitudes {
          Array<float>^ get()
          {
@@ -400,14 +400,14 @@ namespace Processing
    ref class HilbertSpectrum;
 
    template<>
-   private ref class HilbertSpectrum<double> : public HilbertSpectrumBase<double>, public IHilbertSpectrumDouble
+   private ref class HilbertSpectrum<double> : public HilbertSpectrumBase<double>, public Double::IHilbertSpectrum
    {
    internal:
       HilbertSpectrum(IVector<IVector<double>^>^ imfs, double timestep) : HilbertSpectrumBase(imfs, timestep)
       { }
 
    public:
-      // Inherited via IHilbertSpectrumDouble
+      // Inherited via IHilbertSpectrum
       virtual property double MaxFrequency {
          double get()
          {
@@ -433,14 +433,14 @@ namespace Processing
    };
 
    template<>
-   private ref class HilbertSpectrum<float> : public HilbertSpectrumBase<float>, public IHilbertSpectrumSingle
+   private ref class HilbertSpectrum<float> : public HilbertSpectrumBase<float>, public Single::IHilbertSpectrum
    {
    internal:
       HilbertSpectrum(IVector<IVector<float>^>^ imfs, float timestep) : HilbertSpectrumBase(imfs, timestep)
       { }
 
    public:
-      // Inherited via IHilbertSpectrumSingle
+      // Inherited via IHilbertSpectrum
       virtual property float MaxFrequency {
          float get()
          {

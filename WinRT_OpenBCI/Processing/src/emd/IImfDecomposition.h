@@ -20,28 +20,34 @@ using namespace Windows::Foundation::Collections;
 
 namespace Processing
 {
-   /// <summary>
-   /// Double-precision results of an Empirical Mode decomposiiton
-   /// </summary>
-   public interface class IImfDecompositionDouble
+   namespace Double
    {
-      property IVector<IVector<double>^>^ ImfFunctions {
-         IVector<IVector<double>^>^ get();
-      }
-      property Array<double>^ ResidueFunction {
-         Array<double>^ get();
-      }
-   };
-   /// <summary>
-   /// Single-precision results of an Empirical Mode decomposiiton
-   /// </summary>
-   public interface class IImfDecompositionSingle
+      /// <summary>
+      /// Double-precision results of an Empirical Mode decomposiiton
+      /// </summary>
+      public interface class IImfDecomposition
+      {
+         property IVector<IVector<double>^>^ ImfFunctions {
+            IVector<IVector<double>^>^ get();
+         }
+         property Array<double>^ ResidueFunction {
+            Array<double>^ get();
+         }
+      };
+   }
+   namespace Single
    {
-      property IVector<IVector<float>^>^ ImfFunctions {
-         IVector<IVector<float>^>^ get();
-      }
-      property Array<float>^ ResidueFunction {
-         Array<float>^ get();
-      }
-   };
+      /// <summary>
+      /// Single-precision results of an Empirical Mode decomposiiton
+      /// </summary>
+      public interface class IImfDecomposition
+      {
+         property IVector<IVector<float>^>^ ImfFunctions {
+            IVector<IVector<float>^>^ get();
+         }
+         property Array<float>^ ResidueFunction {
+            Array<float>^ get();
+         }
+      };
+   }
 }

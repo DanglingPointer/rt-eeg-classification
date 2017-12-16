@@ -36,14 +36,14 @@ namespace Processing
       /// <param name="yValues">Data y-axis</param>
       /// <param name="maxImfCount">Max number of intrinsic mode functions to extract. Used if less than log2 of data length</param>
       /// <returns>Intrinsic mode functions and residue</returns>
-      static IAsyncOperation<IImfDecompositionSingle^>^ DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, int maxImfCount);
+      static IAsyncOperation<Single::IImfDecomposition^>^ DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues, int maxImfCount);
       /// <summary>
       /// Single-precision asynchronous decomposition, extracting max log2(length) intrinsic mode functions
       /// </summary>
       /// <param name="xValues">Data x-axis</param>
       /// <param name="yValues">Data y-axis</param>
       /// <returns>Intrinsic mode functions and residue</returns>
-      static IAsyncOperation<IImfDecompositionSingle^>^ DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
+      static IAsyncOperation<Single::IImfDecomposition^>^ DecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
 
       /// <summary>
       /// Double-precision asynchronous decomposition
@@ -52,14 +52,14 @@ namespace Processing
       /// <param name="yValues">Data y-axis</param>
       /// <param name="maxImfCount">Max number of intrinsic mode functions to extract. Used if less than log2 of data length</param>
       /// <returns>Intrinsic mode functions and residue</returns>
-      static IAsyncOperation<IImfDecompositionDouble^>^ DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount);
+      static IAsyncOperation<Double::IImfDecomposition^>^ DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues, int maxImfCount);
       /// <summary>
       /// Double-precision asynchronous decomposition, extracting max log2(length) intrinsic mode functions
       /// </summary>
       /// <param name="xValues">Data x-axis</param>
       /// <param name="yValues">Data y-axis</param>
       /// <returns>Intrinsic mode functions and residue</returns>
-      static IAsyncOperation<IImfDecompositionDouble^>^ DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<Double::IImfDecomposition^>^ DecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
 
 
       /// <summary>
@@ -70,7 +70,7 @@ namespace Processing
       /// <param name="noiseSD">Standard deviation of the white noise</param>
       /// <param name="ensembleCount">Number of ensembles to use</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionSingle^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
+      static IAsyncOperation<Single::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
                                                         float noiseSD, int ensembleCount);
       /// <summary>
       /// Single-precision asynchronous ensemble empirical mode decomposition using 100 ensembles
@@ -79,7 +79,7 @@ namespace Processing
       /// <param name="yValues">Data y-axis</param>
       /// <param name="noiseSD">Standard deviation of the white noise</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionSingle^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
+      static IAsyncOperation<Single::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues,
                                                         float noiseSD);
       /// <summary>
       /// Single-precision asynchronous ensemble empirical mode decomposition using 100 ensembles and white noise standard deviation equal 1.0
@@ -87,7 +87,7 @@ namespace Processing
       /// <param name="xValues">Data x-axis</param>
       /// <param name="yValues">Data y-axis</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionSingle^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
+      static IAsyncOperation<Single::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<float>^ xValues, const Array<float>^ yValues);
 
       /// <summary>
       /// Double-precision asynchronous ensemble empirical mode decomposition
@@ -97,7 +97,7 @@ namespace Processing
       /// <param name="noiseSD">Standard deviation of the white noise</param>
       /// <param name="ensembleCount">Number of ensembles to use</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionDouble^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
+      static IAsyncOperation<Double::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
                                                         double noiseSD, int ensembleCount);
       /// <summary>
       /// Double-precision asynchronous ensemble empirical mode decomposition using 100 ensembles
@@ -106,7 +106,7 @@ namespace Processing
       /// <param name="yValues">Data y-axis</param>
       /// <param name="noiseSD">Standard deviation of the white noise</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionDouble^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
+      static IAsyncOperation<Double::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues,
                                                         double noiseSD);
       /// <summary>
       /// Double-precision asynchronous ensemble empirical mode decomposition using 100 ensembles and white noise standard deviation equal 1.0
@@ -114,6 +114,6 @@ namespace Processing
       /// <param name="xValues">Data x-axis</param>
       /// <param name="yValues">Data y-axis</param>
       /// <returns>Max log2(length) intrinsic mode functions, no residue</returns>
-      static IAsyncOperation<IImfDecompositionDouble^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
+      static IAsyncOperation<Double::IImfDecomposition^>^ EnsembleDecomposeAsync(const Array<double>^ xValues, const Array<double>^ yValues);
    };
 }

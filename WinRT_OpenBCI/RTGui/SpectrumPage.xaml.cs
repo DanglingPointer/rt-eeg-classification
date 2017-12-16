@@ -3,6 +3,7 @@ using LiveCharts;
 using LiveCharts.Configurations;
 using LiveCharts.Uwp;
 using Processing;
+using Processing.Double;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,10 +73,10 @@ namespace RTGui
                 xValues[i] = i;
 
             Status = "Decomposing...";
-            IImfDecompositionDouble decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.05, 100);
+            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.05, 100);
 
             Status = "Analysing...";
-            IHilbertSpectrumDouble hs = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
+            IHilbertSpectrum hs = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
             Status = null;
 
             _xStep = (hs.MaxFrequency - hs.MinFrequency) / XLength;

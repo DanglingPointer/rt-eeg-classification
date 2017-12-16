@@ -33,5 +33,12 @@
         <Button Grid.Column="1" Grid.Row="3" Content="Show real-time charts" Click="ShowCharts_OnClick" />
         <Button Grid.Column="2" Grid.Row="3" Content="Show last sample" Click="ShowSample_OnClick" />
 
+        <StackPanel Grid.Column="0" Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" Orientation="Horizontal" >
+            <TextBlock Text="Number of actions:" Margin="10" VerticalAlignment="Center" />
+            <TextBox Name="txtModeCount" TextAlignment="Center" VerticalAlignment="Center" Margin="10" />
+            <Button Content="Start BP Classifier" Click="StartBPClassifier_OnClick" />
+            <Button Content="Start CC Classifier" Click="StartCCClassifier_OnClick" />
+        </StackPanel>
+
     </Grid>
 </Page>

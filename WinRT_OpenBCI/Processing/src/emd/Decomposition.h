@@ -439,7 +439,7 @@ namespace Processing
 
 #pragma region C++/CX ref classes
 
-   private ref class DecomposerBase : public IImfDecompositionDouble, public IImfDecompositionSingle
+   private ref class DecomposerBase : public Double::IImfDecomposition, public Single::IImfDecomposition
    {
       IVector<IVector<double>^>^ m_pImfsD;
       Array<double>^ m_pResidueD;
@@ -460,25 +460,25 @@ namespace Processing
 
    public:
       virtual property IVector<IVector<double>^>^ ImfFunctionsD {
-         IVector<IVector<double>^>^ get() = IImfDecompositionDouble::ImfFunctions::get
+         IVector<IVector<double>^>^ get() = Double::IImfDecomposition::ImfFunctions::get
          {
             return m_pImfsD;
          }
       }
       virtual property Array<double>^ ResidueFunctionD {
-         Array<double>^ get() = IImfDecompositionDouble::ResidueFunction::get
+         Array<double>^ get() = Double::IImfDecomposition::ResidueFunction::get
          {
             return m_pResidueD;
          }
       }
       virtual property IVector<IVector<float>^>^ ImfFunctionsS {
-         IVector<IVector<float>^>^ get() = IImfDecompositionSingle::ImfFunctions::get
+         IVector<IVector<float>^>^ get() = Single::IImfDecomposition::ImfFunctions::get
          {
             return m_pImfsS;
          }
       }
       virtual property Array<float>^ ResidueFunctionS {
-         Array<float>^ get() = IImfDecompositionSingle::ResidueFunction::get
+         Array<float>^ get() = Single::IImfDecomposition::ResidueFunction::get
          {
             return m_pResidueS;
          }

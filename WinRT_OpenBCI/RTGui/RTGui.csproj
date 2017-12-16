@@ -98,6 +98,10 @@
     <Compile Include="ChannelDataPage.xaml.cs">
       <DependentUpon>ChannelDataPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ClassifierAdapter.cs" />
+    <Compile Include="ClassifierPage.xaml.cs">
+      <DependentUpon>ClassifierPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="EmdPage.xaml.cs">
       <DependentUpon>EmdPage.xaml</DependentUpon>
     </Compile>
@@ -135,6 +139,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ChannelDataPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ClassifierPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
