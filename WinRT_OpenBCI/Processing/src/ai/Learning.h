@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <random>
 #include <cassert>
+#include <mutex>
 
 using namespace Platform;
 using namespace Platform::Collections;
@@ -101,7 +102,7 @@ namespace Processing
       }
       TData GetOutput(const TData *pinputs) const
       {
-         TData sum = std::inner_product(m_pweights, m_pweights + m_size, pinputs, m_biasWeight);
+         TData sum = std::inner_product(m_pweights, m_pweights + m_size - 1, pinputs, m_biasWeight);
          return m_Func(sum);
       }
    };
@@ -125,6 +126,7 @@ namespace Processing
    class INetwork
    {
       REQUIRES_FLOAT(TData);
+
    public:
       virtual ~INetwork() { }
       virtual size_t GetNodeCount() const noexcept = 0;
@@ -138,9 +140,9 @@ namespace Processing
    class ITrainer
    {
       REQUIRES_FLOAT(TData);
+
    public:
       virtual ~ITrainer() { }
-      virtual std::shared_ptr<INetwork<TData>> GetNetwork() const noexcept = 0;
       virtual void Train(const std::vector<std::vector<TData>>& trainingSet, const std::vector<std::vector<TData>>& outputs) = 0;
    };
 
@@ -229,7 +231,7 @@ namespace Processing
       {
          assert(pinputs != nullptr);
 
-         Node_t *pn = reinterpret_cast<Node_t *>(m_pnodes);
+         const Node_t *pn = reinterpret_cast<Node_t *>(m_pnodes);
          TData *pres = reinterpret_cast<TData *>(m_pouts);
 
          // layer 0
@@ -307,7 +309,7 @@ namespace Processing
       std::vector<Node_t> m_hidNodes;
 
       std::vector<TData> m_outWeights;
-      std::vector<TData> m_hidWeights;
+      std::vector<std::unique_ptr<TData[]>> m_hidWeights;
       mutable std::vector<TData> m_outputs;  // first hidden nodes, then output layer
 
       std::function<TData(size_t)> m_WeightFactory;
@@ -371,14 +373,16 @@ namespace Processing
       // Adds a new hidden unit and regenerates the output layer
       Node_t *AddHiddenNode()
       {
-         // add hidden weights
+         // allocate and assign hidden weights
          size_t wlen = IN_N + m_hidNodes.size();
+         auto pweights = std::make_unique<TData[]>(wlen);
+
          for (int i = 0; i < wlen; ++i)
-            m_hidWeights.push_back(m_WeightFactory(wlen + 1));
-         TData *pweights = &m_hidWeights[m_hidWeights.size() - wlen];
+            pweights[i] = m_WeightFactory(wlen + 1);
 
          // add hidden node
-         m_hidNodes.emplace_back(pweights, wlen);
+         m_hidNodes.emplace_back(pweights.get(), wlen);
+         m_hidWeights.emplace_back(std::move(pweights));
 
          // regenerate output nodes retaining previous weights
          m_outNodes.clear();
@@ -450,7 +454,7 @@ namespace Processing
    TData DefaultLearningRate(int t)
    {
       REQUIRES_FLOAT(TData);
-      return (TData)100.0 / ((TData)100.0 + t);
+      return (TData)1000.0 / ((TData)1000.0 + t);
    }
 
 #pragma endregion
@@ -465,38 +469,33 @@ namespace Processing
       typedef TData val_t;
 
       std::function<val_t(int)> m_RateFactory;
-      std::shared_ptr<TNetwork<val_t>> m_pnet;
+      TNetwork<val_t> *m_pnet;
 
-      template <typename TPtr, typename TFunc>
-      TrainerBase(TPtr&& network, TFunc&& LearningRateFactory) 
-         : m_RateFactory(std::forward<TFunc>(LearningRateFactory)), m_pnet(std::forward<TPtr>(network))
+      template <typename TFunc>
+      TrainerBase(TNetwork<val_t> *network, TFunc&& LearningRateFactory)
+         : m_RateFactory(std::forward<TFunc>(LearningRateFactory)), m_pnet(network)
       { }
       // avg error over all validation examples
       TData GetAvgError(val_t *pvalres,
                         const std::vector<const std::vector<val_t> *>& valSet, 
                         const std::vector<const std::vector<val_t> *>& valOuts)
       {
-         val_t avgErr = 0.0;
+
+         std::vector<val_t> absErrors(m_pnet->GetOutputCount(), 0.0);
          for (int ex = 0; ex < valSet.size(); ++ex) {
             const std::vector<val_t>& in = *(valSet[ex]);
             const std::vector<val_t>& out = *(valOuts[ex]);
 
             m_pnet->ComputeOutputs(in.data(), pvalres);
 
-            // error for the given example:
-            val_t err = std::abs(std::accumulate(pvalres, pvalres + out.size(), 0) - std::accumulate(out.cbegin(), out.cend(), 0));
-            err /= out.size();
-
-            avgErr += err;
+            for (size_t i = 0; i < out.size(); ++i) {
+               absErrors[i] += std::abs(pvalres[i] - out[i]);
+            }
          }
-         return avgErr / valSet.size(); // avg error over all validation examples
+         return std::accumulate(absErrors.cbegin(), absErrors.cend(), 0.0) / absErrors.size(); // avg error over all outputs
       }
 
    public:
-      virtual std::shared_ptr<INetwork<val_t>> GetNetwork() const noexcept
-      {
-         return m_pnet;
-      }
       virtual void Train(const std::vector<std::vector<val_t>>& trainingSet, const std::vector<std::vector<val_t>>& outputs)
       {
          assert(trainingSet.size() == outputs.size());
@@ -508,16 +507,17 @@ namespace Processing
          std::vector<const std::vector<val_t> *> valout;
 
          size_t exCount = trainingSet.size();
-         size_t valCount = exCount / 3;
 
-         size_t i;
-         for (i = 0; i < valCount; ++i) {
-            valset.push_back(&trainingSet[i]);
-            valout.push_back(&outputs[i]);
-         }
-         for (; i < exCount; ++i) {
-            trainset.push_back(&trainingSet[i]);
-            trainout.push_back(&outputs[i]);
+         for (size_t i = 0; i < exCount; ++i) {
+            if (i % 3 == 0) {
+               // every 3rd example goes to validation set
+               valset.push_back(&trainingSet[i]);
+               valout.push_back(&outputs[i]);
+            }
+            else {
+               trainset.push_back(&trainingSet[i]);
+               trainout.push_back(&outputs[i]);
+            }
          }
          InternalTrain(trainset, trainout, valset, valout);
       }
@@ -539,8 +539,7 @@ namespace Processing
       std::unique_ptr<val_t[]> m_pdeltas;
 
    public:
-      template <typename TPtr>
-      explicit Trainer(TPtr&& network) : Base_t(std::forward<TPtr>(network), &DefaultLearningRate<val_t>),
+      explicit Trainer(BPNetwork<TData> *pnetwork) : Base_t(pnetwork, &DefaultLearningRate<val_t>),
          m_pdeltas(std::make_unique<val_t[]>(m_pnet->GetNodeCount()))
       { }
 
@@ -606,7 +605,7 @@ namespace Processing
                }
 
             } // foreach ex
-
+            
             if (t % 5 == 0) {
                // validation for each 5th epoch
                val_t avgErr = GetAvgError(pvalres.get(), valSet, valOuts); 
@@ -616,7 +615,7 @@ namespace Processing
                   continue;
                }
                // using stoppping criterion GL_2 from here: http://page.mi.fu-berlin.de/prechelt/Biblio/stop_neurnetw98.pdf
-               if (avgErr <= optErr)
+               if (avgErr < optErr)
                   optErr = avgErr;
                else
                   done = (100.0 * (avgErr / optErr - 1)) > 2;
@@ -636,8 +635,7 @@ namespace Processing
       const val_t m_errThres;
 
    public:
-      template <typename TPtr>
-      Trainer(TPtr&& pnetwork, val_t errThreshold = 0.01) : Base_t(std::forward<TPtr>(pnetwork), &DefaultLearningRate<val_t>), m_errThres(errThreshold)
+      explicit Trainer(CCNetwork<TData> *pnetwork, val_t errThreshold = 0.01) : Base_t(pnetwork, &DefaultLearningRate<val_t>), m_errThres(errThreshold)
       { }
 
    protected:
@@ -694,7 +692,7 @@ namespace Processing
             const std::vector<val_t>& in = *(valSet[ex]);
             const std::vector<val_t>& out = *(valOuts[ex]);
 
-            std::vector<val_t> tempStates(m_pnet->GetNodeCount());
+            std::vector<val_t> tempStates(inputCount + hiddenNodeCount + outputCount);
             std::vector<val_t> tempOut(outputCount);
             m_pnet->ComputeOutputs(in.data(), tempOut.data());
 
@@ -741,7 +739,7 @@ namespace Processing
 
                // calculate dS/dw
                val_t sprime = (val_t)0;
-               for (size_t output = 0; outputCount; ++output) {
+               for (size_t output = 0; output < outputCount; ++output) {
 
                   val_t cor = 0;
                   for (size_t ex = 0; ex < exCount; ++ex)
@@ -783,31 +781,29 @@ namespace Processing
             // Compute error
             val_t avgErr = GetAvgError(pouts.get(), valSet, valOuts);
 
-            // Check if we are done (stoppping criterion GL_2 from here: http://page.mi.fu-berlin.de/prechelt/Biblio/stop_neurnetw98.pdf)
-            if (t == 0) {
-               optErr = avgErr;
-               continue;
-            }
-            if (avgErr <= optErr)
-               optErr = avgErr;
-            else if ((100.0 * (avgErr / optErr - 1)) > 2)
-               return;
+            if (t % 5 == 0) {
 
-            // Check if we need to add a new node ("Neural Smithing", p.199)
-            if (t == 0) {
-               prevErr = lastNodeErr = avgErr;
-               continue;
-            }
-            val_t deltaT = std::abs(avgErr - prevErr) / lastNodeErr;
-            prevErr = avgErr;
-            if (deltaT > m_errThres) {
-               continue;
-            }
+               if (t == 0) {
+                  prevErr = lastNodeErr = optErr = avgErr;
+                  continue;
+               }
+               // Check if we are done (stoppping criterion GL_2 from here: http://page.mi.fu-berlin.de/prechelt/Biblio/stop_neurnetw98.pdf)
+               if (avgErr <= optErr)
+                  optErr = avgErr;
+               else if ((100.0 * (avgErr / optErr - 1)) > 2)
+                  return;
 
-            // Adding and training new node
-            lastNodeErr = avgErr;
-            AddNode(valSet, valOuts);
+               // Check if we need to add a new node ("Neural Smithing", p.199)
+               val_t deltaT = std::abs(avgErr - prevErr) / lastNodeErr;
+               prevErr = avgErr;
+               if (deltaT > m_errThres) {
+                  continue;
+               }
 
+               // Adding and training new node
+               lastNodeErr = avgErr;
+               AddNode(valSet, valOuts);
+            }
          } // epoch
       }
    };
@@ -822,6 +818,7 @@ namespace Processing
    {
       REQUIRES_FLOAT(TData);
 
+      std::mutex m_mut;
       std::unique_ptr<INetwork<TData>> m_pNetwork;
 
       std::vector<std::vector<TData>> m_inputs;
@@ -832,50 +829,61 @@ namespace Processing
       { }
       void CreateBPNetwork(int32 inN, int32 N, int32 outN, int32 L)
       {
+         std::lock_guard<std::mutex> lk(m_mut);
          m_pNetwork = std::make_unique<BPNetwork<TData>>(inN, N, outN, L, &BottouWeightFactory<TData>);
       }
       void CreateCCNetwork(int32 inN, int32 outN)
       {
+         std::lock_guard<std::mutex> lk(m_mut);
          m_pNetwork = std::make_unique<CCNetwork<TData>>(inN, outN, &BottouWeightFactory<TData>);
       }
       void AddExample(const Array<TData>^ input, const Array<TData>^ output)
       {
+         std::lock_guard<std::mutex> lk(m_mut);
+         assert(input->Length == m_pNetwork->GetInputCount());
+         assert(output->Length == m_pNetwork->GetOutputCount());
+
          std::vector<TData> in(begin(input), end(input));
          std::vector<TData> out(begin(output), end(output));
-
-         Normalize(in);
-         Normalize(out);
+         Normalize(&in);
 
          m_inputs.emplace_back(std::move(in));
-         m_outputs.emplace_back(std::move(out));;
+         m_outputs.emplace_back(std::move(out));
       }
       void Train()
       {
+         std::lock_guard<std::mutex> lk(m_mut);
          auto ptrainer = m_pNetwork->CreateTrainer();
          ptrainer->Train(m_inputs, m_outputs);
 
-         m_inputs.clear();
-         m_outputs.clear();
+         //m_inputs.clear();
+         //m_outputs.clear();
       }
       void Classify(const Array<TData>^ data, WriteOnlyArray<TData>^ output)
       {
+         std::lock_guard<std::mutex> lk(m_mut);
+         assert(data->Length == m_pNetwork->GetInputCount());
+         assert(output->Length == m_pNetwork->GetOutputCount());
+
          std::vector<TData> norm(begin(data), end(data));
-         Normalize(norm);
+         Normalize(&norm);
+
+         auto pres = std::make_unique<TData[]>(m_pNetwork->GetOutputCount());
          m_pNetwork->ComputeOutputs(norm.data(), output->Data);
       }
 
    private:
-      static void Normalize(std::vector<TData>& data)
+      static void Normalize(std::vector<TData> *data)
       {
-         TData mean = std::accumulate(data.begin(), data.end(), (TData)0.0);
-         mean /= data.size();
+         TData mean = std::accumulate(data->begin(), data->end(), (TData)0.0);
+         mean /= data->size();
 
-         std::vector<TData> temp(data.size());
-         std::transform(data.begin(), data.end(), temp.begin(), [mean](TData val) { return val - mean; });
+         std::vector<TData> temp(data->size());
+         std::transform(data->begin(), data->end(), temp.begin(), [mean](TData val) { return val - mean; });
          TData sd = std::inner_product(temp.begin(), temp.end(), temp.begin(), (TData)0.0);
          sd = std::sqrt(sd / (temp.size() - 1));
          
-         std::transform(data.begin(), data.end(), data.begin(), [mean, sd](TData val) { return (val - mean) / sd; });
+         std::transform(data->begin(), data->end(), data->begin(), [mean, sd](TData val) { return (val - mean) / sd; });
       }
    };
 

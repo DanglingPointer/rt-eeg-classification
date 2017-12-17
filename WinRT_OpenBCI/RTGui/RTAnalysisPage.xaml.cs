@@ -132,6 +132,7 @@ namespace RTGui
         }
         public async void UpdateContent(double maxFreq, double minFreq, double maxSpectrum, double avgSpectrum, CoreDispatcher uiDisp)
         {
+            Debug.WriteLine("Updating RT charts conent");
             await uiDisp.RunAsync(CoreDispatcherPriority.Normal, () => {
                 MaxFreqText = $"Max inst frequency = {maxFreq}";
                 MinFreqText = $"Min inst frequency = {minFreq}";

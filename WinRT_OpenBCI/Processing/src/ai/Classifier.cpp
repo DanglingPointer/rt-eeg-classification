@@ -44,7 +44,12 @@ IAsyncAction^ Processing::Single::Classifier::TrainAsync()
 
 IAsyncAction^ Processing::Single::Classifier::ClassifyAsync(const Array<float>^ data, WriteOnlyArray<float>^ output)
 {
-   return concurrency::create_async([=]() { m_pc->Classify(data, output);; });   
+   return concurrency::create_async([=]() { m_pc->Classify(data, output); });   
+}
+
+void Processing::Single::Classifier::Classify(const Array<float>^ data, WriteOnlyArray<float>^ output)
+{
+   m_pc->Classify(data, output);
 }
 
 
@@ -73,5 +78,10 @@ IAsyncAction^ Processing::Double::Classifier::TrainAsync()
 
 IAsyncAction^ Processing::Double::Classifier::ClassifyAsync(const Array<double>^ data, WriteOnlyArray<double>^ output)
 {
-   return concurrency::create_async([=]() { m_pc->Classify(data, output);; });
+   return concurrency::create_async([=]() { m_pc->Classify(data, output); });
+}
+
+void Processing::Double::Classifier::Classify(const Array<double>^ data, WriteOnlyArray<double>^ output)
+{
+   m_pc->Classify(data, output);
 }

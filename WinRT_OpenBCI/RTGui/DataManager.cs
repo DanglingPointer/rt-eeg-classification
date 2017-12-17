@@ -39,8 +39,8 @@ namespace RTGui
         {
             _sample = new List<BciData>();
             _lastSample = null;
-            _sampleSize = 500;
-            _ensembleCount = 500;
+            _sampleSize = /*500*/100;
+            _ensembleCount = /*500*/10;
 
             _queue = new ConcurrentQueue<List<BciData>>();
             _queueStopped = true;
@@ -125,19 +125,19 @@ namespace RTGui
         }
         private void AdjustParameters(int e, int de)
         {
-            int u = 20 * e + 20 * de; // PD-controller
+            //int u = 20 * e + 20 * de; // PD-controller
 
-            Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
-            Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
+            //Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
+            //Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
 
-            _ensembleCount -= u;
-            if (_ensembleCount < 10) {
-                _ensembleCount = 10;
+            //_ensembleCount -= u;
+            //if (_ensembleCount < 10) {
+            //    _ensembleCount = 10;
 
-                _sampleSize -= u;
-                if (_sampleSize < 100)
-                    Stop();
-            }            
+            //    _sampleSize -= u;
+            //    if (_sampleSize < 100)
+            //        Stop();
+            //}            
         }
     }
 }

@@ -49,12 +49,21 @@ namespace RTGui
             _currentAction = 0;
             _classifying = _collecting = false;
             int modeCount = (int)e.Parameter;
-            NeuralNetworkType nntype = modeCount > 100 ? NeuralNetworkType.CascadeCorrelation : NeuralNetworkType.BackPropagating;
+            NeuralNetworkType nntype;
+            if (modeCount > 100) {
+                nntype = NeuralNetworkType.CascadeCorrelation;
+                modeCount -= 100;
+            }
+            else {
+                nntype = NeuralNetworkType.BackPropagating;
+            }
             if (DataManager.Current.Classifier == null 
                 || DataManager.Current.Classifier.NetworkType != nntype
                 || DataManager.Current.Classifier.ModeCount != modeCount) {
+
+                DataManager.Current.Classifier?.Unsubscrube();
                 DataManager.Current.Classifier = new ClassifierAdapter(modeCount);
-                DataManager.Current.Classifier.SetupNetwork(NeuralNetworkType.BackPropagating);
+                DataManager.Current.Classifier.SetupNetwork(nntype);
 
                 txtNetworkType.Text = nntype.ToString();
                 _actionNames = new string[modeCount];

@@ -43,6 +43,8 @@ namespace Processing
          IAsyncAction^ TrainAsync();
 
          IAsyncAction^ ClassifyAsync(const Array<float>^ data, WriteOnlyArray<float>^ output);
+
+         void Classify(const Array<float>^ data, WriteOnlyArray<float>^ output);
       };
    }
 
@@ -67,6 +69,8 @@ namespace Processing
          IAsyncAction^ TrainAsync();
 
          IAsyncAction^ ClassifyAsync(const Array<double>^ data, WriteOnlyArray<double>^ output);
+
+         void Classify(const Array<double>^ data, WriteOnlyArray<double>^ output);
       };
    }
 
