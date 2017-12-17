@@ -376,13 +376,13 @@ namespace Processing
          // allocate and assign hidden weights
          size_t wlen = IN_N + m_hidNodes.size();
          auto pweights = std::make_unique<TData[]>(wlen);
-
          for (int i = 0; i < wlen; ++i)
             pweights[i] = m_WeightFactory(wlen + 1);
 
-         // add hidden node
+         // add hidden node and set bias weight
          m_hidNodes.emplace_back(pweights.get(), wlen);
          m_hidWeights.emplace_back(std::move(pweights));
+         SetBiasWeight(&m_hidNodes.back(), m_hidWeights.back().get(), wlen);
 
          // regenerate output nodes retaining previous weights
          m_outNodes.clear();
@@ -480,7 +480,6 @@ namespace Processing
                         const std::vector<const std::vector<val_t> *>& valSet, 
                         const std::vector<const std::vector<val_t> *>& valOuts)
       {
-
          std::vector<val_t> absErrors(m_pnet->GetOutputCount(), 0.0);
          for (int ex = 0; ex < valSet.size(); ++ex) {
             const std::vector<val_t>& in = *(valSet[ex]);
@@ -488,7 +487,7 @@ namespace Processing
 
             m_pnet->ComputeOutputs(in.data(), pvalres);
 
-            for (size_t i = 0; i < out.size(); ++i) {
+            for (size_t i = 0; i < m_pnet->GetOutputCount(); ++i) {
                absErrors[i] += std::abs(pvalres[i] - out[i]);
             }
          }
@@ -571,7 +570,7 @@ namespace Processing
 
                // output layer
                int layer = m_pnet->GetLayerCount() - 1;
-               for (int node = 0; node < m_pnet->GetLayerSize(layer); ++node) {
+               for (int node = 0; node < m_pnet->GetOutputCount(); ++node) {
                   val_t a = m_pnet->GetOutputAt(layer, node);
                   Delta(layer, node) = a * (1 - a) * (out[node] - a);
                }
@@ -583,7 +582,7 @@ namespace Processing
 
                      val_t sum = 0.0;
                      for (int prevnode = 0; prevnode < m_pnet->GetLayerSize(layer + 1); prevnode++) {
-                        sum += Delta(layer + 1, prevnode) * m_pnet->GetNodeAt(layer + 1, prevnode)->GetWeightAt(node);
+                        sum += Delta(layer + 1, prevnode) * m_pnet->GetNodeAt(layer + 1, prevnode)->GetWeightAt(node + 1);
                      }
                      Delta(layer, node) = a * (1 - a) * sum;
                   }
