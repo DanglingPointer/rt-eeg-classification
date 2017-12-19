@@ -74,7 +74,7 @@ namespace RTGui
                             for (int i = 0; i < sample.Count; ++i)
                                 yValues[i] = sample[i].ChannelData[channel] * ScaleFactor;
 
-                            var decomp = await Emd.EnsembleDecomposeAsync(xValues, yValues, 0.05, _ensembleCount);
+                            var decomp = await Emd.EnsembleDecomposeAsync(xValues, yValues, 0.01, _ensembleCount);
                             var spectrum = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
                             
                             SampleAnalysed?.Invoke(spectrum, channel);

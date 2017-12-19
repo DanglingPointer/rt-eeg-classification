@@ -235,28 +235,27 @@ namespace Processing
          TData *pres = reinterpret_cast<TData *>(m_pouts);
 
          // layer 0
-         for (int node = 0; node < N; ++node) {
-            pres[node] = pn->GetOutput(pinputs);
-            pn++;
-         }
+         concurrency::parallel_for((size_t)0, N, [pres, pn, pinputs](size_t node) {
+            pres[node] = (pn + node)->GetOutput(pinputs);
+         });
+         pn += N;
          pres += N;
 
          // layer 1 through L-2 inclusively
          for (int layer = 1; layer < L - 1; ++layer) {
             TData *pinput = pres - N;
-            for (int node = 0; node < N; ++node) {
-               pres[node] = pn->GetOutput(pinput);
-               pn++;
-            }
+            concurrency::parallel_for((size_t)0, N, [pres, pn, pinput](size_t node) {
+               pres[node] = (pn + node)->GetOutput(pinput);
+            });
+            pn += N;
             pres += N;
          }
 
          // layer L-1
          TData *pinput = pres - N;
-         for (int node = 0; node < OUT_N; ++node) {
-            pres[node] = pn->GetOutput(pinput);
-            pn++;
-         }
+         concurrency::parallel_for((size_t)0, OUT_N, [pres, pn, pinput](size_t node) {
+            pres[node] = (pn + node)->GetOutput(pinput);
+         });
 
          if (poutputs)
             std::copy(pres, pres + OUT_N, poutputs);
@@ -577,7 +576,7 @@ namespace Processing
 
                // other layers
                for (--layer; layer >= 0; --layer) {
-                  for (int node = 0; node < m_pnet->GetLayerSize(layer); ++node) {
+                  concurrency::parallel_for((size_t)0, m_pnet->GetLayerSize(layer), [this, layer](size_t node) {
                      val_t a = m_pnet->GetOutputAt(layer, node);
 
                      val_t sum = 0.0;
@@ -585,12 +584,12 @@ namespace Processing
                         sum += Delta(layer + 1, prevnode) * m_pnet->GetNodeAt(layer + 1, prevnode)->GetWeightAt(node + 1);
                      }
                      Delta(layer, node) = a * (1 - a) * sum;
-                  }
+                  });
                }
 
                // update weights
                for (int layer = 0; layer < m_pnet->GetLayerCount(); ++layer) {
-                  for (int node = 0; node < m_pnet->GetLayerSize(layer); ++node) {
+                  concurrency::parallel_for((size_t)0, m_pnet->GetLayerSize(layer), [this, layer, &in, alpha](size_t node) {
                      auto pnode = m_pnet->GetNodeAt(layer, node);
 
                      val_t delta = Delta(layer, node);
@@ -599,8 +598,7 @@ namespace Processing
                         val_t w = pnode->GetWeightAt(i) + alpha * a * delta;
                         pnode->SetWeightAt(i, w);
                      }
-
-                  }
+                  });
                }
 
             } // foreach ex
@@ -644,13 +642,14 @@ namespace Processing
       {
          size_t inputCount = m_pnet->GetInputCount();
          size_t outputCount = m_pnet->GetOutputCount();
+
          for (int ex = 0; ex < trainSet.size(); ++ex) {
             const std::vector<val_t>& in = *(trainSet[ex]);
             const std::vector<val_t>& out = *(trainOuts[ex]);
 
             m_pnet->ComputeOutputs(in.data(), pouts);
 
-            for (size_t i = 0; i < outputCount; ++i) {
+            concurrency::parallel_for((size_t)0, outputCount, [this, &in, &out, pouts, alpha, inputCount, outputCount](size_t i) {
                auto pnode = m_pnet->GetOutputNode(i);
                val_t a = pouts[i];
                val_t delta = a * (1 - a) * (out[i] - a);
@@ -671,7 +670,7 @@ namespace Processing
                   val_t w = pnode->GetWeightAt(wInd) + alpha * m_pnet->GetHiddenOutput(node) * delta;
                   pnode->SetWeightAt(wInd, w);
                }
-            }
+            });
          }
       }
       void AddNode(const std::vector<const std::vector<val_t> *>& valSet, const std::vector<const std::vector<val_t> *>& valOuts)
