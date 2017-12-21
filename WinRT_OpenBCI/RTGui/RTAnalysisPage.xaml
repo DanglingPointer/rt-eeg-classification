@@ -31,7 +31,7 @@
         <TextBlock Text="{Binding Title}" Grid.Row="0" Grid.ColumnSpan="3" FontWeight="Bold" />
 
         <!-- Chart 1 -->
-        <telchart:RadCartesianChart Name="freqChart" PaletteName="DefaultDark" Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
+        <telchart:RadCartesianChart Name="dataChart" PaletteName="DefaultDark" Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
             <telchart:RadCartesianChart.Grid>
                 <telchart:CartesianChartGrid MajorLinesVisibility="XY"/>
             </telchart:RadCartesianChart.Grid>
@@ -39,19 +39,10 @@
                 <telchart:LinearAxis/>
             </telchart:RadCartesianChart.VerticalAxis>
             <telchart:RadCartesianChart.HorizontalAxis>
-                <telchart:LinearAxis Maximum="{Binding MaxXValue}" />
+                <telchart:LinearAxis />
             </telchart:RadCartesianChart.HorizontalAxis>
 
-            <telchart:ScatterLineSeries IsVisibleInLegend="True" LegendTitle="Max frequency" ItemsSource="{Binding MaxFreqValues}" StrokeThickness="0.5" Stroke="Red" >
-                <telchart:ScatterLineSeries.XValueBinding>
-                    <telchart:PropertyNameDataPointBinding PropertyName="XValue"/>
-                </telchart:ScatterLineSeries.XValueBinding>
-                <telchart:ScatterLineSeries.YValueBinding>
-                    <telchart:PropertyNameDataPointBinding PropertyName="YValue"/>
-                </telchart:ScatterLineSeries.YValueBinding>
-            </telchart:ScatterLineSeries>
-
-            <telchart:ScatterLineSeries IsVisibleInLegend="True" LegendTitle="Min frequency" ItemsSource="{Binding MinFreqValues}" StrokeThickness="0.5" Stroke="Blue" >
+            <telchart:ScatterLineSeries IsVisibleInLegend="True" LegendTitle="EEG data" ItemsSource="{Binding ChannelData}" StrokeThickness="0.5" Stroke="Red" >
                 <telchart:ScatterLineSeries.XValueBinding>
                     <telchart:PropertyNameDataPointBinding PropertyName="XValue"/>
                 </telchart:ScatterLineSeries.XValueBinding>
@@ -69,13 +60,13 @@
                 <telchart:CartesianChartGrid MajorLinesVisibility="XY"/>
             </telchart:RadCartesianChart.Grid>
             <telchart:RadCartesianChart.VerticalAxis>
-                <telchart:LinearAxis/>
+                <telchart:LinearAxis Minimum="-10" />
             </telchart:RadCartesianChart.VerticalAxis>
             <telchart:RadCartesianChart.HorizontalAxis>
-                <telchart:LinearAxis Maximum="{Binding MaxXValue}" />
+                <telchart:LinearAxis />
             </telchart:RadCartesianChart.HorizontalAxis>
 
-            <telchart:ScatterLineSeries IsVisibleInLegend="True" LegendTitle="Max Hilbert Spectrum" ItemsSource="{Binding MaxSpectrumValues}" StrokeThickness="0.5" Stroke="Red" >
+            <telchart:ScatterLineSeries IsVisibleInLegend="True" LegendTitle="Marginal Hilbert Spectrum" ItemsSource="{Binding SpectrumValues}" StrokeThickness="0.5" Stroke="Red" >
                 <telchart:ScatterLineSeries.XValueBinding>
                     <telchart:PropertyNameDataPointBinding PropertyName="XValue"/>
                 </telchart:ScatterLineSeries.XValueBinding>
@@ -116,7 +107,7 @@
         <TextBlock Text="{Binding MinFreqText}" Grid.Column="0" Grid.Row="5" />
 
         <TextBlock Text="{Binding AvgSpectrumText}" Grid.Column="1" Grid.Row="4" />
-        <TextBlock Text="{Binding MaxSpectrumText}" Grid.Column="1" Grid.Row="5" />
+        <TextBlock Text="{Binding EnsembleCountText}" Grid.Column="1" Grid.Row="5" />
         
         <Button Content="Next channel" Grid.Row="6" Grid.Column="1" Click="NextChannel_OnClick" />
         <Button Content="Previous channel" Grid.Row="6" Grid.Column="0" Click="PrevChannel_OnClick" />

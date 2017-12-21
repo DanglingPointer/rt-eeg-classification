@@ -21,10 +21,10 @@ namespace RTGui
         public static DataManager Current
         { get; } = new DataManager();
 
-        public const double ScaleFactor = 4.5d / 24.0d / 8388607.0d;
+        public const double ScaleFactor = 0.02235; //  uV per count
 
 
-        public event Action<IHilbertSpectrum, int> SampleAnalysed;
+        public event Action<IHilbertSpectrum, double[], int> SampleAnalysed;
 
         private int _sampleSize;
         private int _ensembleCount;
@@ -39,8 +39,8 @@ namespace RTGui
         {
             _sample = new List<BciData>();
             _lastSample = null;
-            _sampleSize = /*500*/100;
-            _ensembleCount = /*500*/10;
+            _sampleSize = 1000;
+            _ensembleCount = 300;
 
             _queue = new ConcurrentQueue<List<BciData>>();
             _queueStopped = true;
@@ -74,10 +74,13 @@ namespace RTGui
                             for (int i = 0; i < sample.Count; ++i)
                                 yValues[i] = sample[i].ChannelData[channel] * ScaleFactor;
 
-                            var decomp = await Emd.EnsembleDecomposeAsync(xValues, yValues, 0.01, _ensembleCount);
-                            var spectrum = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
-                            
-                            SampleAnalysed?.Invoke(spectrum, channel);
+                            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, yValues, 1000, _ensembleCount);
+                            //var decomp = await Emd.DecomposeAsync(xValues, yValues);
+
+                            IHilbertSpectrum spectrum = (decomp.ImfFunctions.Count == 0) ?
+                                                        null : await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
+
+                            SampleAnalysed?.Invoke(spectrum, yValues, channel);
                         }
                     }
                     else {
@@ -89,12 +92,14 @@ namespace RTGui
         public void Stop()
         {
             _queueStopped = true;
+            Debug.WriteLine("Queue stopped");
         }
         public void EnqueueData(BciData data)
         {
             if (_queueStopped)
                 return;
             lock (_sampleLock) {
+                Debug.WriteLine($"Sample No = {data.SampleNo}");
                 _sample.Add(data);
                 if (_sample.Count >= _sampleSize) {
                     _lastSample = _sample;
@@ -125,19 +130,19 @@ namespace RTGui
         }
         private void AdjustParameters(int e, int de)
         {
-            //int u = 20 * e + 20 * de; // PD-controller
+            int u = 20 * e + 20 * de; // PD-controller
 
-            //Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
-            //Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
+            Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
+            Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
 
-            //_ensembleCount -= u;
-            //if (_ensembleCount < 10) {
-            //    _ensembleCount = 10;
+            _ensembleCount -= u;
+            if (_ensembleCount < 10) {
+                _ensembleCount = 10;
 
-            //    _sampleSize -= u;
-            //    if (_sampleSize < 100)
-            //        Stop();
-            //}            
+                //_sampleSize -= u;
+                //if (_sampleSize < 100)
+                //    Stop();
+            }
         }
     }
 }

@@ -132,7 +132,7 @@ namespace RTGui
                     ydata.Add(value);
                 }
                 ChannelData[channel] = new SeriesCollection {
-                    new LineSeries {
+                    new LineSeries {                        
                         Title = null,
                         Values = ydata,
                         PointGeometry = DefaultGeometries.None,

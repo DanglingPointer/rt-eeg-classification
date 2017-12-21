@@ -31,7 +31,7 @@ namespace RTGui
         /// <param name="type"></param>
         /// <param name="inputSize"></param>
         /// <param name="modeCount"></param>
-        public ClassifierAdapter(int modeCount, int inputSize = 50)
+        public ClassifierAdapter(int modeCount, int inputSize)
         {
             InputSize = inputSize;
             ModeCount = modeCount;
@@ -47,7 +47,7 @@ namespace RTGui
         {
             NetworkType = type;
             if (type == NeuralNetworkType.BackPropagating)
-                _classifier.CreateFixedSizeNetwork(InputSize * 8, InputSize * 4, ModeCount, 3); // 2 hidden layers + 1 output layer
+                _classifier.CreateFixedSizeNetwork(InputSize * 8, InputSize * 4, ModeCount, 2); // 1 hidden layer + 1 output layer
             else if (type == NeuralNetworkType.CascadeCorrelation)
                 _classifier.CreateCascadeNetwork(InputSize * 8, ModeCount);
             _ready = true;
@@ -104,7 +104,7 @@ namespace RTGui
             await _classifier.TrainAsync();
         }
 
-        private void OnSampleAnalysed(IHilbertSpectrum hs, int channel)
+        private void OnSampleAnalysed(IHilbertSpectrum hs, double[] channelData, int channel)
         {
             if (_mode == -1) {
                 return;
@@ -115,12 +115,14 @@ namespace RTGui
                     _inputData.Clear();
                 }
             }
-            double minFreq = hs.MinFrequency;
-            double interval = (hs.MaxFrequency - minFreq) / InputSize;
-            lock (_inputDataLock) {
-                for (int i = 0; i < InputSize; ++i) {
-                    double w = minFreq + i * interval;
-                    _inputData.Add(hs.ComputeMarginalAt(w));
+
+            if (hs != null) {
+                double interval = hs.MaxFrequency / InputSize;
+                lock (_inputDataLock) {
+                    for (int i = 0; i < InputSize; ++i) {
+                        double w = i * interval;
+                        _inputData.Add(hs.ComputeMarginalAt(w));
+                    }
                 }
             }
 

@@ -64,26 +64,26 @@ namespace RTGui
                 DataManager.Current.SampleAnalysed += OnSampleAnalysed;
             }
         }
-        private void OnSampleAnalysed(IHilbertSpectrum spectrum, int channel)
+        private void OnSampleAnalysed(IHilbertSpectrum spectrum, double[] channelData, int channel)
         {
-            if (_vm != null && channel == _vm.Channel) {
-                double maxFreq = spectrum.MaxFrequency;
+            if (_vm != null && channel == _vm.Channel && spectrum != null) {
                 double minFreq = spectrum.MinFrequency;
-                double step = (maxFreq - minFreq) / 1000;
-
+                double maxFreq = spectrum.MaxFrequency;
+                double step = maxFreq / 1000;
                 double avgSpectrum = 0.0;
-                double maxSpectrum = spectrum.ComputeMarginalAt(minFreq);
-                int i = 0;
-                for (double w = minFreq; w <= maxFreq; w += step) {
-                    double value = spectrum.ComputeMarginalAt(w);
-                    avgSpectrum += value;
-                    if (value > maxSpectrum)
-                        maxSpectrum = value;
-                    ++i;
-                }
-                avgSpectrum /= i;
+                List<double> spectrumData = new List<double>();
+                List<double> spectrumFreq = new List<double>();
 
-                _vm.UpdateContent(maxFreq, minFreq, maxSpectrum, avgSpectrum, Dispatcher);
+                for (int i = 0; i < 1000; ++i) {
+                    double freq = step * i;
+                    double value = spectrum.ComputeMarginalAt(freq);
+                    spectrumData.Add(value);
+                    spectrumFreq.Add(freq);
+                    avgSpectrum += value;
+                }
+                avgSpectrum /= 1000;
+
+                _vm.UpdateContent(maxFreq, minFreq, channelData, spectrumData, spectrumFreq, avgSpectrum, Dispatcher);
             }
         }
         private void NextChannel_OnClick(object sender, RoutedEventArgs e)
@@ -124,26 +124,37 @@ namespace RTGui
         public RTAnalysisViewModel(int channel)
         {
             _channel = channel;
-            MaxFreqValues = new ObservableList<Point>();
-            MinFreqValues = new ObservableList<Point>();
-            MaxSpectrumValues = new ObservableList<Point>();
+            //MaxFreqValues = new ObservableList<Point>();
+            //MinFreqValues = new ObservableList<Point>();
+            ChannelData = new ObservableList<Point>();
             AvgSpectrumValues = new ObservableList<Point>();
+
+            SpectrumValues = new ObservableList<Point>();
             Title = $"Channel {channel + 1}";
         }
-        public async void UpdateContent(double maxFreq, double minFreq, double maxSpectrum, double avgSpectrum, CoreDispatcher uiDisp)
+        public async void UpdateContent(double maxFreq, double minFreq, 
+            IList<double> channelData, IList<double> spectrum, IList<double> freqs, double avgSpectrum, CoreDispatcher uiDisp)
         {
             Debug.WriteLine("Updating RT charts conent");
             await uiDisp.RunAsync(CoreDispatcherPriority.Normal, () => {
                 MaxFreqText = $"Max inst frequency = {maxFreq}";
                 MinFreqText = $"Min inst frequency = {minFreq}";
-                MaxSpectrumText = $"Max Hilbert spectrum = {maxSpectrum}";
                 AvgSpectrumText = $"Avg Hilbert spectrum = {avgSpectrum}";
+                EnsembleCountText = $"Ensemble count = {DataManager.Current.EnsembleCount}";
                 
-                AppendDataSeries(MaxFreqValues, maxFreq);
-                AppendDataSeries(MinFreqValues, minFreq);
-
+                //AppendDataSeries(MaxFreqValues, maxFreq);
+                //AppendDataSeries(MinFreqValues, minFreq);
                 AppendDataSeries(AvgSpectrumValues, avgSpectrum);
-                AppendDataSeries(MaxSpectrumValues, maxSpectrum);
+
+                ChannelData.Clear();
+                for (int i = 0; i < channelData.Count; ++i)
+                    ChannelData.Add(new Point(i, channelData[i]));
+                ChannelData.NotifyCollectionReset();
+
+                SpectrumValues.Clear();
+                for(int i = 0; i < spectrum.Count; ++i)
+                    SpectrumValues.Add(new Point(freqs[i], spectrum[i]));
+                SpectrumValues.NotifyCollectionReset();
             });
         }
         private static void AppendDataSeries(ObservableList<Point> series, double newValue)
@@ -157,11 +168,13 @@ namespace RTGui
             series.NotifyCollectionReset();
         }
 
-        public ObservableList<Point> MaxFreqValues
+        //public ObservableList<Point> MaxFreqValues
+        //{ get; }
+        //public ObservableList<Point> MinFreqValues
+        //{ get; }
+        public ObservableList<Point> ChannelData
         { get; }
-        public ObservableList<Point> MinFreqValues
-        { get; }
-        public ObservableList<Point> MaxSpectrumValues
+        public ObservableList<Point> SpectrumValues
         { get; }
         public ObservableList<Point> AvgSpectrumValues
         { get; }
@@ -209,13 +222,13 @@ namespace RTGui
                 OnPropertyChanged(nameof(AvgSpectrumText));
             }
         }
-        private string _maxSpectrumText;
-        public string MaxSpectrumText
+        private string _ensembleCountText;
+        public string EnsembleCountText
         {
-            get => _maxSpectrumText;
+            get => _ensembleCountText;
             set {
-                _maxSpectrumText = value;
-                OnPropertyChanged(nameof(MaxSpectrumText));
+                _ensembleCountText = value;
+                OnPropertyChanged(nameof(EnsembleCountText));
             }
         }
     }

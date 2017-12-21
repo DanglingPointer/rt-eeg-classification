@@ -60,12 +60,12 @@ namespace Communication
         }
         private static Int32 Int24ToInt32(byte[] int24)
         {
-            UInt32 result = (UInt32)(int24[0] << 16 | int24[1] << 8 | int24[2]);
+            Int32 result = (int24[0] << 16 | int24[1] << 8 | int24[2]);
             if ((result & 0x00800000) > 0)
-                result |= 0xFF000000;
+                result |= unchecked((Int32)0xFF000000);
             else
                 result &= 0x00FFFFFF;
-            return (Int32)result;
+            return result;
         }
     }
 }

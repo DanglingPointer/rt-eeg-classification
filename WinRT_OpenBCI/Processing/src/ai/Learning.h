@@ -246,7 +246,7 @@ namespace Processing
             TData *pinput = pres - N;
             concurrency::parallel_for((size_t)0, N, [pres, pn, pinput](size_t node) {
                pres[node] = (pn + node)->GetOutput(pinput);
-            });
+            }, concurrency::static_partitioner());
             pn += N;
             pres += N;
          }
@@ -255,7 +255,7 @@ namespace Processing
          TData *pinput = pres - N;
          concurrency::parallel_for((size_t)0, OUT_N, [pres, pn, pinput](size_t node) {
             pres[node] = (pn + node)->GetOutput(pinput);
-         });
+         }, concurrency::static_partitioner());
 
          if (poutputs)
             std::copy(pres, pres + OUT_N, poutputs);
@@ -490,6 +490,9 @@ namespace Processing
                absErrors[i] += std::abs(pvalres[i] - out[i]);
             }
          }
+#ifndef NDEBUG
+         std::vector<val_t> debug(pvalres, pvalres + m_pnet->GetOutputCount());
+#endif
          return std::accumulate(absErrors.cbegin(), absErrors.cend(), 0.0) / absErrors.size(); // avg error over all outputs
       }
 
@@ -571,7 +574,7 @@ namespace Processing
                int layer = m_pnet->GetLayerCount() - 1;
                for (int node = 0; node < m_pnet->GetOutputCount(); ++node) {
                   val_t a = m_pnet->GetOutputAt(layer, node);
-                  Delta(layer, node) = a * (1 - a) * (out[node] - a);
+                  Delta(layer, node) =  -(out[node] - a) * a * (1 - a);
                }
 
                // other layers
@@ -584,9 +587,12 @@ namespace Processing
                         sum += Delta(layer + 1, prevnode) * m_pnet->GetNodeAt(layer + 1, prevnode)->GetWeightAt(node + 1);
                      }
                      Delta(layer, node) = a * (1 - a) * sum;
-                  });
+                  }, concurrency::static_partitioner());
                }
 
+#ifndef NDEBUG
+               std::vector<val_t> debugDeltas(m_pdeltas.get(), m_pdeltas.get() + m_pnet->GetNodeCount());
+#endif
                // update weights
                for (int layer = 0; layer < m_pnet->GetLayerCount(); ++layer) {
                   concurrency::parallel_for((size_t)0, m_pnet->GetLayerSize(layer), [this, layer, &in, alpha](size_t node) {
@@ -595,14 +601,24 @@ namespace Processing
                      val_t delta = Delta(layer, node);
                      for (int i = 0; i < pnode->GetWeightsCount(); ++i) {
                         val_t a = (i == 0) ? 1.0 : ((layer == 0) ? in[i - 1] : m_pnet->GetOutputAt(layer - 1, i - 1));
-                        val_t w = pnode->GetWeightAt(i) + alpha * a * delta;
+                        val_t w = pnode->GetWeightAt(i) - alpha * a * delta;
                         pnode->SetWeightAt(i, w);
                      }
-                  });
+                  }, concurrency::static_partitioner());
                }
-
             } // foreach ex
-            
+#ifndef NDEBUG               
+            std::vector<val_t> debugWeights;
+            for (int layer = 0; layer < m_pnet->GetLayerCount(); ++layer) {
+               for (size_t node = 0; node < m_pnet->GetLayerSize(layer); ++node) {
+                  auto pnode = m_pnet->GetNodeAt(layer, node);
+                  for (int i = 0; i < pnode->GetWeightsCount(); ++i) {
+                     debugWeights.push_back(pnode->GetWeightAt(i));
+                  }
+               }
+            }
+            debugWeights.push_back(-1);
+#endif
             if (t % 5 == 0) {
                // validation for each 5th epoch
                val_t avgErr = GetAvgError(pvalres.get(), valSet, valOuts); 
@@ -652,25 +668,25 @@ namespace Processing
             concurrency::parallel_for((size_t)0, outputCount, [this, &in, &out, pouts, alpha, inputCount, outputCount](size_t i) {
                auto pnode = m_pnet->GetOutputNode(i);
                val_t a = pouts[i];
-               val_t delta = a * (1 - a) * (out[i] - a);
+               val_t delta = -(out[i] - a) * a * (1 - a);
 
                // bias weight
-               val_t w0 = pnode->GetWeightAt(0) + alpha * delta;
+               val_t w0 = pnode->GetWeightAt(0) - alpha * delta;
                pnode->SetWeightAt(0, w0);
 
                // weights from inputs
                for (size_t input = 0; input < inputCount; ++input) {
-                  val_t w = pnode->GetWeightAt(input + 1) + alpha * in[input] * delta;
+                  val_t w = pnode->GetWeightAt(input + 1) - alpha * in[input] * delta;
                   pnode->SetWeightAt(input + 1, w);
                }
                // weights from hidden nodes
                size_t hiddenNodeCount = m_pnet->GetNodeCount() - outputCount;
                for (size_t node = 0; node < hiddenNodeCount; ++node) {
                   int wInd = node + 1 + inputCount;
-                  val_t w = pnode->GetWeightAt(wInd) + alpha * m_pnet->GetHiddenOutput(node) * delta;
+                  val_t w = pnode->GetWeightAt(wInd) - alpha * m_pnet->GetHiddenOutput(node) * delta;
                   pnode->SetWeightAt(wInd, w);
                }
-            });
+            }, concurrency::static_partitioner());
          }
       }
       void AddNode(const std::vector<const std::vector<val_t> *>& valSet, const std::vector<const std::vector<val_t> *>& valOuts)
@@ -757,7 +773,7 @@ namespace Processing
                pnode->SetWeightAt(wInd, w);
 
                // continue if at least one w changed by more than 1 %
-               if ((std::abs(w - prevW) / prevW) > 0.01) {
+               if ((std::abs(w - prevW) / std::abs(prevW)) > 0.01) {
                   done = false;
                }
             } // w
@@ -776,10 +792,9 @@ namespace Processing
             val_t alpha = m_RateFactory(t);
             TrainOutputs(trainSet, trainOuts, pouts.get(), alpha);
 
-            // Compute error
-            val_t avgErr = GetAvgError(pouts.get(), valSet, valOuts);
-
             if (t % 5 == 0) {
+               // Compute error
+               val_t avgErr = GetAvgError(pouts.get(), valSet, valOuts);
 
                if (t == 0) {
                   prevErr = lastNodeErr = optErr = avgErr;
@@ -853,9 +868,6 @@ namespace Processing
          std::lock_guard<std::mutex> lk(m_mut);
          auto ptrainer = m_pNetwork->CreateTrainer();
          ptrainer->Train(m_inputs, m_outputs);
-
-         //m_inputs.clear();
-         //m_outputs.clear();
       }
       void Classify(const Array<TData>^ data, WriteOnlyArray<TData>^ output)
       {
@@ -877,11 +889,11 @@ namespace Processing
          mean /= data->size();
 
          std::vector<TData> temp(data->size());
-         std::transform(data->begin(), data->end(), temp.begin(), [mean](TData val) { return val - mean; });
+         concurrency::parallel_transform(data->begin(), data->end(), temp.begin(), [mean](TData val) { return val - mean; });
          TData sd = std::inner_product(temp.begin(), temp.end(), temp.begin(), (TData)0.0);
          sd = std::sqrt(sd / (temp.size() - 1));
          
-         std::transform(data->begin(), data->end(), data->begin(), [mean, sd](TData val) { return (val - mean) / sd; });
+         concurrency::parallel_transform(data->begin(), data->end(), data->begin(), [mean, sd](TData val) { return (val - mean) / sd; });
       }
    };
 

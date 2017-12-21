@@ -15,6 +15,7 @@
 */
 #pragma once
 #include <memory>
+#include <cassert>
 #include <complex>
 #include <cmath>
 #include <type_traits>
@@ -29,8 +30,8 @@ using namespace Windows::Foundation::Collections;
  #define M_PI 3.14159265358979323846
 #endif
 
-#ifdef REQUIRES_FLOAT
-#undef REQUIRES_FLOAT
+#ifdef REQUIRES_FLOAT(T)
+#undef REQUIRES_FLOAT(T)
 #endif
 #define REQUIRES_FLOAT(T) typename = std::enable_if_t<std::is_floating_point_v<T>>
 #define REQUIRES_INT(T) typename = std::enable_if_t<std::is_integral_v<T>>
@@ -79,9 +80,9 @@ namespace Processing
             input[i] = Cval(0.0, 0.0);
          }
 #ifdef RECURSIVE_FFT
-         return RecursiveForward(std::move(input), *pResultLength); // or RecursiveForward()
+         return RecursiveForward(std::move(input), *pResultLength);
 #else
-         return IterativeForward(std::move(input), *pResultLength); // or RecursiveForward()
+         return IterativeForward(std::move(input), *pResultLength);
 #endif
       }
       // Method 4 from here: https://www.dsprelated.com/showarticle/800.php
@@ -92,7 +93,7 @@ namespace Processing
             data[i].imag(-1 * data[i].imag());
          }
 #ifdef RECURSIVE_FFT
-         data = RecursiveForward(std::move(data), length); // or RecursiveForward()
+         data = RecursiveForward(std::move(data), length);
 #else
          data = IterativeForward(std::move(data), length);
 #endif
@@ -232,6 +233,7 @@ namespace Processing
       SpectralAnalyzerBase(const Array<TData>^ yValues, TData timeStep) : m_length(yValues->Length),
          m_pInstAmpl(ref new Array<TData>(m_length)), m_pInstPhas(ref new Array<TData>(m_length)), m_pInstFreq(ref new Array<TData>(m_length - 1))
       {
+         assert(yValues->Length > 0);
          Uptr pdata = std::make_unique<TData[]>(m_length);
          memcpy(pdata.get(), yValues->Data, sizeof(TData) * m_length);
 
@@ -246,7 +248,7 @@ namespace Processing
             this->m_pInstPhas[0] = std::atan2(hilberted[0].imag(), hilberted[0].real());
             for (int i = 1; i < m_length; ++i) {
                this->m_pInstPhas[i] = std::atan2(hilberted[i].imag(), hilberted[i].real());
-               this->m_pInstFreq[i - 1] = (m_pInstPhas[i] - m_pInstPhas[i - 1]) * invTimestep;
+               this->m_pInstFreq[i - 1] = (m_pInstPhas[i - 1] - m_pInstPhas[i]) * invTimestep;
             }
          };
 
@@ -260,14 +262,17 @@ namespace Processing
       }
       TData GetAmplitudeAt(int i) const
       {
+         assert(i < m_length);
          return m_pInstAmpl[i];
       }
       TData GetPhaseAt(int i) const
       {
+         assert(i < m_length);
          return m_pInstPhas[i];
       }
       TData GetFrequencyAt(int i) const
       {
+         assert(i < m_length - 1);
          return m_pInstFreq[i];
       }
       int GetLength() const noexcept
@@ -354,6 +359,7 @@ namespace Processing
 
       HilbertSpectrumBase(IVector<IVector<TData>^>^ imfs, TData timestep) : m_analyses(imfs->Size), m_maxFreq(0.0), m_minFreq(0.0), m_timestep(timestep)
       {
+         assert(imfs->Size > 0);
          concurrency::parallel_for((size_t)0, (size_t)(imfs->Size), [this, imfs](size_t i) {
             IVector<TData>^ imf = imfs->GetAt(i);
             Array<TData>^ pdata = ref new Array<TData>(imf->Size);

@@ -73,16 +73,16 @@ namespace RTGui
                 xValues[i] = i;
 
             Status = "Decomposing...";
-            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 0.05, 100);
+            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 1000, 500);
 
             Status = "Analysing...";
             IHilbertSpectrum hs = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);
             Status = null;
 
-            _xStep = (hs.MaxFrequency - hs.MinFrequency) / XLength;
+            _xStep = hs.MaxFrequency / XLength;
 
             var marginalData = new ChartValues<double>();
-            for (double w = hs.MinFrequency; w <= hs.MaxFrequency; w += _xStep) {
+            for (double w = 0; w <= hs.MaxFrequency; w += _xStep) {
                 marginalData.Add(hs.ComputeMarginalAt(w));
             }
 

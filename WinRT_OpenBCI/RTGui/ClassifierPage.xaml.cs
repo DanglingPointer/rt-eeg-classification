@@ -62,7 +62,7 @@ namespace RTGui
                 || DataManager.Current.Classifier.ModeCount != modeCount) {
 
                 DataManager.Current.Classifier?.Unsubscrube();
-                DataManager.Current.Classifier = new ClassifierAdapter(modeCount);
+                DataManager.Current.Classifier = new ClassifierAdapter(modeCount, 50);
                 DataManager.Current.Classifier.SetupNetwork(nntype);
 
                 txtNetworkType.Text = nntype.ToString();
