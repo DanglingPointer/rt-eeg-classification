@@ -395,7 +395,7 @@ namespace Processing
          TData res = 0.0;
          for (int i = 1; i < length; ++i) {
             // linear interpolation
-            TData mean = (TData)0.5 * (GetSpectrumAt(w, i - 1, maxError) + GetSpectrumAt(w, i, maxError));
+            TData mean = (TData)0.5 * (GetSpectrumAt(w, i - 1, maxError) + GetSpectrumAt(w, i, maxError)) * m_timestep;
             res += mean * m_timestep;
          }
          return res;

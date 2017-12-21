@@ -237,7 +237,7 @@ namespace Processing
          // layer 0
          concurrency::parallel_for((size_t)0, N, [pres, pn, pinputs](size_t node) {
             pres[node] = (pn + node)->GetOutput(pinputs);
-         });
+         }, concurrency::static_partitioner());
          pn += N;
          pres += N;
 
@@ -440,7 +440,7 @@ namespace Processing
 
    // https://infoscience.epfl.ch/record/82296/files/94-07.pdf, L.Bottou approach
    template <typename TData>
-   TData BottouWeightFactory(size_t fanIn)
+   inline TData BottouWeightFactory(size_t fanIn)
    {
       REQUIRES_FLOAT(TData);
       std::random_device rd;
@@ -450,7 +450,7 @@ namespace Processing
    }
 
    template <typename TData>
-   TData DefaultLearningRate(int t)
+   inline TData DefaultLearningRate(int t)
    {
       REQUIRES_FLOAT(TData);
       return (TData)1000.0 / ((TData)1000.0 + t);
@@ -490,9 +490,6 @@ namespace Processing
                absErrors[i] += std::abs(pvalres[i] - out[i]);
             }
          }
-#ifndef NDEBUG
-         std::vector<val_t> debug(pvalres, pvalres + m_pnet->GetOutputCount());
-#endif
          return std::accumulate(absErrors.cbegin(), absErrors.cend(), 0.0) / absErrors.size(); // avg error over all outputs
       }
 
@@ -590,9 +587,6 @@ namespace Processing
                   }, concurrency::static_partitioner());
                }
 
-#ifndef NDEBUG
-               std::vector<val_t> debugDeltas(m_pdeltas.get(), m_pdeltas.get() + m_pnet->GetNodeCount());
-#endif
                // update weights
                for (int layer = 0; layer < m_pnet->GetLayerCount(); ++layer) {
                   concurrency::parallel_for((size_t)0, m_pnet->GetLayerSize(layer), [this, layer, &in, alpha](size_t node) {
@@ -607,18 +601,7 @@ namespace Processing
                   }, concurrency::static_partitioner());
                }
             } // foreach ex
-#ifndef NDEBUG               
-            std::vector<val_t> debugWeights;
-            for (int layer = 0; layer < m_pnet->GetLayerCount(); ++layer) {
-               for (size_t node = 0; node < m_pnet->GetLayerSize(layer); ++node) {
-                  auto pnode = m_pnet->GetNodeAt(layer, node);
-                  for (int i = 0; i < pnode->GetWeightsCount(); ++i) {
-                     debugWeights.push_back(pnode->GetWeightAt(i));
-                  }
-               }
-            }
-            debugWeights.push_back(-1);
-#endif
+
             if (t % 5 == 0) {
                // validation for each 5th epoch
                val_t avgErr = GetAvgError(pvalres.get(), valSet, valOuts); 

@@ -149,7 +149,7 @@ namespace RTGui
                 for (int i = 0; i < _channelData.Length; ++i)
                     xValues[i] = i;
 
-                _decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 0.05, 100);
+                _decomp = await Emd.EnsembleDecomposeAsync(xValues, _channelData, 1000, DataManager.Current.EnsembleCount);
 
                 Status = null;
                 setButtonsEnabled?.Invoke(true);

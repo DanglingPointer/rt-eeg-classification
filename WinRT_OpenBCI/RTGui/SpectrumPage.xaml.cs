@@ -24,7 +24,7 @@ using Windows.UI.Xaml.Navigation;
 namespace RTGui
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// A page showing Marginal Hilbert spectrum of a selected channel from the last sample
     /// </summary>
     public sealed partial class SpectrumPage : Page
     {
@@ -73,7 +73,8 @@ namespace RTGui
                 xValues[i] = i;
 
             Status = "Decomposing...";
-            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 1000, 500);
+            IImfDecomposition decomp = await Emd.EnsembleDecomposeAsync(xValues, channelData, 
+                1000, DataManager.Current.EnsembleCount);
 
             Status = "Analysing...";
             IHilbertSpectrum hs = await Hsa.GetHilbertSpectrumAsync(decomp, 1.0);

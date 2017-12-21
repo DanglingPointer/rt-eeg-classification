@@ -130,7 +130,7 @@ namespace RTGui
         }
         private void AdjustParameters(int e, int de)
         {
-            int u = 20 * e + 20 * de; // PD-controller
+            int u = 20 * e + 15 * de; // PD-controller
 
             Debug.WriteLine($"--- P-term = {10 * e}, D-term = {20 * de} ---");
             Debug.WriteLine($"PD-controller output = {u}\nEnsemble count = {_ensembleCount}\nSample size = {_sampleSize}");
@@ -139,9 +139,9 @@ namespace RTGui
             if (_ensembleCount < 10) {
                 _ensembleCount = 10;
 
-                //_sampleSize -= u;
-                //if (_sampleSize < 100)
-                //    Stop();
+                _sampleSize -= u;
+                if (_sampleSize < 100)
+                    Stop();
             }
         }
     }
